@@ -1,0 +1,570 @@
+<Window x:Class="HalerithAddonClient.Windows.SettingsWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:HalerithAddonClient.Controls"
+        Title="Settings"
+        Width="920" Height="600"
+        MinWidth="860" MinHeight="520"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+
+    <Window.Styles>
+        <Style Selector="Button.account-delete">
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+        </Style>
+        <Style Selector="ComboBoxItem:pointerover Button.account-delete">
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="IsHitTestVisible" Value="True"/>
+        </Style>
+        <Style Selector="Button.account-delete:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="#991B1B"/>
+            <Setter Property="BorderBrush" Value="#991B1B"/>
+        </Style>
+        <Style Selector="Button.account-add-row">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="8,6"/>
+        </Style>
+        <Style Selector="Button.account-add-row:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SurfaceHoverBrush}"/>
+        </Style>
+        <Style Selector="DataGridCell">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColorBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="FocusAdorner" Value="{x:Null}"/>
+        </Style>
+        <Style Selector="DataGridCell:pointerover">
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColorBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        </Style>
+        <Style Selector="DataGridCell:selected">
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColorBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        </Style>
+        <Style Selector="DataGridCell:selected:pointerover">
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColorBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        </Style>
+        <Style Selector="DataGridCell:current">
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColorBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        </Style>
+        <Style Selector="DataGridCell:focus">
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColorBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        </Style>
+        <Style Selector="DataGridCell:current /template/ Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColorBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        </Style>
+        <Style Selector="DataGridCell:focus /template/ Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColorBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="*,Auto">
+
+        <!-- ════════════════════════════════════════════════════════════════
+             Tab control — Environments / Application / Subscription / Help / About
+        ════════════════════════════════════════════════════════════════════ -->
+        <TabControl x:Name="_tabControl"
+                    Grid.Row="0"
+                    MinHeight="0"
+                    Background="{DynamicResource BackgroundBrush}"
+                    SelectionChanged="TabControl_SelectionChanged">
+
+            <!-- ── TAB 0: ENVIRONMENTS ────────────────────────────────────── -->
+            <TabItem Header="Environments">
+                <Grid Margin="16" RowDefinitions="Auto,*,Auto">
+
+                    <TextBlock Grid.Row="0"
+                               Text="Game environments deployed to the Runtime folder. Environments in use cannot be deleted."
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               FontSize="12" TextWrapping="Wrap"
+                               Margin="0,0,0,10"/>
+
+                    <DataGrid x:Name="_instancesGrid" Grid.Row="1"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              SelectionMode="Single"
+                              BorderThickness="1"
+                              BorderBrush="{DynamicResource BorderColorBrush}"
+                              GridLinesVisibility="Horizontal"
+                              HorizontalGridLinesBrush="{DynamicResource BorderColorBrush}"
+                              SelectionChanged="InstancesGrid_SelectionChanged">
+
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="MC Version"
+                                                    Width="SizeToCells"
+                                                    MinWidth="121">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding MinecraftVersion}"
+                                                   HorizontalAlignment="Left"
+                                                   VerticalAlignment="Center"
+                                                   Margin="8,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Loader"
+                                                    Width="SizeToCells"
+                                                    MinWidth="130"
+                                                    MaxWidth="260">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding LoaderDisplay}"
+                                                   HorizontalAlignment="Left"
+                                                   VerticalAlignment="Center"
+                                                   Margin="8,0"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Width="SizeToCells"
+                                                    MinWidth="90">
+                                <DataGridTemplateColumn.Header>
+                                    <TextBlock Text="Size"
+                                               HorizontalAlignment="Right"
+                                               TextAlignment="Right"/>
+                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding SizeDisplay}"
+                                                   HorizontalAlignment="Stretch"
+                                                   TextAlignment="Right"
+                                                   VerticalAlignment="Center"
+                                                   Margin="8,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Status"
+                                                    Width="*"
+                                                    MinWidth="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding StatusDisplay}"
+                                                   HorizontalAlignment="Left"
+                                                   VerticalAlignment="Center"
+                                                   Margin="8,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,0">
+                        <Button x:Name="_deleteInstanceButton"
+                                Content="Delete Selected"
+                                Click="DeleteInstanceButton_Click"
+                                IsEnabled="False"/>
+                        <TextBlock x:Name="_instanceStatusLabel"
+                                   Text=""
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextMutedBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="12,0,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- ── TAB 3: APPLICATION ─────────────────────────────────────── -->
+            <TabItem Header="Application">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+                    <StackPanel Orientation="Vertical">
+
+                        <!-- Launcher account / server -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                            <StackPanel Orientation="Vertical" Margin="0,0,16,0">
+                                <TextBlock Text="Launcher Account"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
+                                <ComboBox x:Name="_defaultAccountComboBox" Width="221"
+                                          PlaceholderText="Sign into Minecraft"
+                                          SelectionChanged="_DefaultAccountComboBox_SelectionChanged"
+                                          DropDownOpened="DefaultAccountComboBox_DropDownOpened"
+                                          DropDownClosed="DefaultAccountComboBox_DropDownClosed"
+                                          ToolTip.Tip="The Minecraft account used for Halerith server access and Default-mode launches">
+                                    <ComboBox.SelectionBoxItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal"
+                                                        Spacing="6"
+                                                        IsVisible="{Binding IsAccount}">
+                                                <Image Source="{Binding HeadImage}"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Stretch="UniformToFill"
+                                                       IsVisible="{Binding HasHeadImage}"/>
+                                                <TextBlock Text="{Binding DisplayName}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.SelectionBoxItemTemplate>
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid MinWidth="180">
+                                                <Grid ColumnDefinitions="Auto,*,Auto"
+                                                      HorizontalAlignment="Stretch"
+                                                      IsVisible="{Binding IsAccount}">
+                                                    <Image Grid.Column="0"
+                                                           Source="{Binding HeadImage}"
+                                                           Width="24"
+                                                           Height="24"
+                                                           Stretch="UniformToFill"
+                                                           Margin="0,0,8,0"
+                                                           IsVisible="{Binding HasHeadImage}"/>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding DisplayName}"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               VerticalAlignment="Center"/>
+                                                    <Button Grid.Column="2"
+                                                            Classes="account-delete"
+                                                            Content="✕"
+                                                            Width="25" Height="25"
+                                                            Padding="0"
+                                                            Margin="8,0,0,0"
+                                                            FontSize="11"
+                                                            Tag="{Binding}"
+                                                            ToolTip.Tip="Remove account"
+                                                            Click="DefaultAccountDeleteMenuButton_Click"/>
+                                                </Grid>
+                                                <Button Classes="account-add-row"
+                                                        Content="Add Account"
+                                                        HorizontalAlignment="Stretch"
+                                                        Height="31"
+                                                        IsVisible="{Binding IsAdd}"
+                                                        Click="DefaultAccountAddMenuButton_Click"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="Default Instance"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
+                                <ComboBox x:Name="_defaultServerComboBox" Width="221"
+                                          SelectionChanged="_DefaultServerComboBox_SelectionChanged"
+                                          ToolTip.Tip="The server or local instance used when the app starts"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Launcher timing -->
+                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                            <StackPanel Orientation="Vertical" Margin="0,0,24,0">
+                                <TextBlock Text="Startup Timeout (seconds)"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
+                                <TextBox x:Name="_startupTimeoutBox" Width="140" HorizontalAlignment="Left"
+                                         ToolTip.Tip="Maximum seconds to wait for startup API calls"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="Launcher Countdown (seconds)"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
+                                <TextBox x:Name="_launcherCountdownBox" Width="140" HorizontalAlignment="Left"
+                                         ToolTip.Tip="Seconds the launcher waits after fetching the manifest before applying changes. Set to 0 to apply immediately."/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <Border Height="1" Background="{DynamicResource BorderColorBrush}" Margin="0,14,0,10"/>
+
+                        <!-- Auto Update -->
+                        <CheckBox x:Name="_allowAutoUpdateCheckBox"
+                                  Content="Allow Auto Update"
+                                  ToolTip.Tip="When enabled, the launcher will automatically sync/update content before launching the game"/>
+
+                        <!-- Guided tips -->
+                        <StackPanel x:Name="_guidedTipsPanel"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    Margin="0,10,0,0">
+                            <CheckBox x:Name="_guidedTipsCheckBox"
+                                      Content="Show guided tips"
+                                      VerticalAlignment="Center"
+                                      ToolTip.Tip="Show contextual guidance that has not yet been completed"/>
+                            <Button x:Name="_restartGuidedTipsButton"
+                                    Content="Restart guided tips"
+                                    Height="31"
+                                    Padding="14,0"
+                                    Margin="16,0,0,0"
+                                    Click="RestartGuidedTips_Click"/>
+                            <TextBlock x:Name="_guidedTipsStatus"
+                                       VerticalAlignment="Center"
+                                       Margin="10,0,0,0"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        </StackPanel>
+
+                        <!-- Backups -->
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0" VerticalAlignment="Center">
+                            <CheckBox x:Name="_keepBackupsCheckBox"
+                                      Content="Keep backups"
+                                      VerticalAlignment="Center"
+                                      ToolTip.Tip="Move replaced and removed files to _backup / _removed folders instead of deleting them"/>
+                            <TextBlock Text="Max files per folder"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       Margin="16,0,8,0"/>
+                            <TextBox x:Name="_backupMaxFilesBox" Width="60" HorizontalAlignment="Left"
+                                     VerticalAlignment="Center"
+                                     ToolTip.Tip="Maximum backup files to keep per folder (0 = unlimited)"/>
+                            <TextBlock Text="(enter 0 for unlimited)"
+                                       FontSize="11"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       Margin="8,0,0,0"/>
+                        </StackPanel>
+
+                        <StackPanel x:Name="_curseForgeKeyRow" Orientation="Horizontal" Margin="0,10,0,0"
+                                    VerticalAlignment="Center" IsVisible="False">
+                            <TextBlock Text="CurseForge API Key" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,8,0"/>
+                            <TextBox x:Name="_curseForgeKeyBox" Width="300" PasswordChar="●"
+                                     Watermark="Enter your CurseForge API key"
+                                     ToolTip.Tip="Used only for local CurseForge content when this Client build has no embedded key"/>
+                            <Button x:Name="_resetCurseForgeKeyButton" Content="Reset" Height="31"
+                                    Padding="14,0" Margin="8,0,0,0" IsVisible="False"
+                                    Click="ResetCurseForgeKey_Click"/>
+                        </StackPanel>
+
+                        <Border Height="1" Background="{DynamicResource BorderColorBrush}" Margin="0,14,0,10"/>
+
+                        <!-- Diagnostics -->
+                        <TextBlock Text="Diagnostics"
+                                   FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   Margin="0,0,0,4"/>
+                        <CheckBox x:Name="_enableFileLoggingCheckBox"
+                                  Content="Enable diagnostic logging"
+                                  Margin="0,0,0,8"
+                                  ToolTip.Tip="Write diagnostic events to local log files in the application data folder"/>
+                        <TextBlock Text="Collect all client logs and upload for review."
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,8"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="_submitLogsButton"
+                                    Content="Send Diagnostics"
+                                    MinWidth="131" Height="31" Padding="14,0"
+                                    Click="SubmitLogs_Click"
+                                    ToolTip.Tip="Zip and upload all client log files to the server for diagnostics"/>
+                            <TextBlock x:Name="_submitLogsStatus"
+                                       Text=""
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center"
+                                       Margin="10,0,0,0"/>
+                        </StackPanel>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Subscription status is scoped to the selected Minecraft account. -->
+            <TabItem Header="Subscription">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="20,12,20,12">
+                    <StackPanel MaxWidth="840" Spacing="12" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Subscription" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock Text="Select Minecraft account to review subscription."
+                                   TextWrapping="Wrap" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ComboBox x:Name="_subscriptionAccountBox" Width="260" Height="33"
+                                      PlaceholderText="Sign into Minecraft"
+                                      SelectionChanged="SubscriptionAccount_SelectionChanged"
+                                      DropDownOpened="SubscriptionAccount_DropDownOpened"
+                                      DropDownClosed="SubscriptionAccount_DropDownClosed">
+                                <ComboBox.SelectionBoxItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsAccount}">
+                                            <Image Source="{Binding HeadImage}" Width="20" Height="20"
+                                                   Stretch="UniformToFill" IsVisible="{Binding HasHeadImage}"/>
+                                            <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.SelectionBoxItemTemplate>
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid MinWidth="180">
+                                            <Grid ColumnDefinitions="Auto,*,Auto" IsVisible="{Binding IsAccount}">
+                                                <Image Grid.Column="0" Source="{Binding HeadImage}" Width="25" Height="25"
+                                                       Stretch="UniformToFill" Margin="0,0,8,0" IsVisible="{Binding HasHeadImage}"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding DisplayName}"
+                                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                                <Button Grid.Column="2" Classes="account-delete" Content="✕"
+                                                        Width="25" Height="25" Padding="0" Margin="8,0,0,0"
+                                                        FontSize="11" Tag="{Binding}" ToolTip.Tip="Remove account"
+                                                        Click="SubscriptionAccountDelete_Click"/>
+                                            </Grid>
+                                            <Button Classes="account-add-row" Content="Add Account"
+                                                    HorizontalAlignment="Stretch" Height="31"
+                                                    IsVisible="{Binding IsAdd}" Click="SubscriptionAccountAdd_Click"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button x:Name="_subscriptionRefreshButton" Content="Refresh status" Click="SubscriptionRefresh_Click"/>
+                        </StackPanel>
+                        <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" Padding="14,12"
+                                BorderThickness="4,0,0,0" BorderBrush="{DynamicResource AccentBlueBrush}">
+                            <StackPanel Spacing="5">
+                                <TextBlock x:Name="_subscriptionStatus" Text="Select a Minecraft account"
+                                           FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                <TextBlock x:Name="_subscriptionDetails" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </StackPanel>
+                        </Border>
+                        <TextBlock x:Name="_subscriptionError" TextWrapping="Wrap" Foreground="{DynamicResource DangerBrush}"/>
+                        <TextBlock Text="Manage your Halerith account, subscription, Free server choice, and server selection in the Addon portal."
+                                   TextWrapping="Wrap" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="Licensing portal" Click="SubscriptionLicensingPortal_Click"/>
+                            <Button Content="Client configuration" Click="SubscriptionConfigurationPortal_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ── TAB 5: ABOUT ───────────────────────────────────────────── -->
+            <TabItem Header="Help">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="16" Spacing="16">
+                        <TextBlock Text="Halerith Addon Client help" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock Text="Learn how to set up and use the Client, or join our community for help and discussion." TextWrapping="Wrap"/>
+                        <Button Content="Client documentation" MinWidth="230" Height="42" Tag="https://halerith.com/products/addon/client/" Click="HelpLink_Click"/>
+                        <Button Content="Join the Discord" MinWidth="230" Height="42" Background="#5865F2" Foreground="White" Tag="https://halerith.com/discord" Click="HelpLink_Click"/>
+                        <Button Content="Follow us on Reddit" MinWidth="230" Height="42" Background="#C93600" Foreground="White" Tag="https://halerith.com/reddit" Click="HelpLink_Click"/>
+                        <TextBlock Text="Links open in your default browser." Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="_helpLinkError" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="About">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20,16">
+                    <StackPanel MaxWidth="520" HorizontalAlignment="Left">
+
+                        <TextBlock Text="Halerith Addon Client"
+                                   FontSize="22" FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   Margin="0,0,0,8"/>
+
+                        <TextBlock x:Name="_versionText"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   Margin="0,0,0,16"/>
+
+                        <TextBlock TextWrapping="Wrap"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   Margin="0,0,0,10">
+                            Build, sync and launch your Minecraft instances. Halerith Addon Client helps
+                            keep mods, resource packs and shaders aligned with your Manager server,
+                            or lets you manage your own local Minecraft: Java Edition instances.
+                            Minecraft is not included; a valid game account is required to play.
+                        </TextBlock>
+
+                        <TextBlock Text="Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft."
+                                   TextWrapping="Wrap" FontSize="12" Margin="0,0,0,16"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <TextBlock Text="by "
+                                       FontSize="13"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <TextBlock Text="Halerith"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource TextMutedBrush}"
+                                       TextDecorations="Underline"
+                                       Cursor="Hand"
+                                       PointerPressed="HalerithLink_PointerPressed"/>
+                        </StackPanel>
+
+                        <!-- Privacy & Data section -->
+                        <Border Margin="0,20,0,0"
+                                Padding="0,16,0,0"
+                                BorderBrush="{DynamicResource BorderColorBrush}"
+                                BorderThickness="0,1,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Privacy"
+                                           FontSize="14" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           Margin="0,0,0,8"/>
+                                <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,0,0,4">
+                                    <TextBlock Text="Privacy Policy"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource TextMutedBrush}"
+                                               TextDecorations="Underline"
+                                               Cursor="Hand"
+                                               PointerPressed="PrivacyPolicyLink_PointerPressed"/>
+                                    <TextBlock Text="Request Your Data"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource TextMutedBrush}"
+                                               TextDecorations="Underline"
+                                               Cursor="Hand"
+                                               PointerPressed="DataRequestLink_PointerPressed"/>
+                                </StackPanel>
+                                <TextBlock x:Name="DataRequestStatusText" IsVisible="False" TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- EULA section -->
+                        <Border Margin="0,20,0,0"
+                                Padding="0,16,0,0"
+                                BorderBrush="{DynamicResource BorderColorBrush}"
+                                BorderThickness="0,1,0,0">
+                            <StackPanel>
+                                <TextBlock Text="End User License Agreement"
+                                           FontSize="14" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           Margin="0,0,0,6"/>
+                                <TextBlock x:Name="_eulaStatusText"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           Margin="0,0,0,10"/>
+                                <Button x:Name="_viewEulaButton"
+                                        Content="View EULA"
+                                        MinWidth="121"
+                                        Height="35"
+                                        Click="ViewEula_Click"/>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+        </TabControl>
+
+        <!-- ════════════════════════════════════════════════════════════════
+             Footer — Save / Cancel + status text
+        ════════════════════════════════════════════════════════════════════ -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderColorBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="12,10">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <Button x:Name="_saveButton"
+                            Content="Save"
+                            Classes="accent"
+                            MinWidth="101" Height="33" Padding="14,0"
+                            Click="SaveButton_Click"/>
+                    <Button Content="Cancel"
+                            MinWidth="101" Height="33" Padding="14,0" Margin="8,0,0,0"
+                            Click="CancelButton_Click"/>
+                </StackPanel>
+
+                <TextBlock x:Name="_footerStatusLabel"
+                           Text="" FontSize="12"
+                           Foreground="{DynamicResource TextMutedBrush}"
+                           VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+
+    </Grid>
+</Window>

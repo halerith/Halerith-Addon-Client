@@ -1,0 +1,109 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="HalerithAddonClient.Controls.EulaOverlay">
+
+    <!-- Full-window overlay that blocks all interaction until EULA is accepted -->
+    <Grid>
+        <!-- Semi-transparent backdrop -->
+        <Border Background="#E0000000"/>
+
+        <!-- EULA dialog card -->
+        <Border Background="{DynamicResource SurfaceBrush}"
+                CornerRadius="12"
+                MaxWidth="680"
+                MaxHeight="800"
+                Margin="40"
+                Padding="0"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                BoxShadow="0 8 32 0 #80000000">
+            <Grid RowDefinitions="Auto,*,Auto">
+
+                <!-- Header -->
+                <Border Grid.Row="0"
+                        Padding="28,20,28,16"
+                        BorderBrush="{DynamicResource BorderColorBrush}"
+                        BorderThickness="0,0,0,1">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="End User License Agreement"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock x:Name="VersionText"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <ComboBox x:Name="AcceptedVersionSelector" IsVisible="False" HorizontalAlignment="Stretch" AutomationProperties.Name="Accepted EULA version" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Scrollable EULA body: right margin on StackPanel is wider
+                     (28 gap + ~14 scrollbar overlay) so visible gap matches the left -->
+                <ScrollViewer x:Name="EulaScroller"
+                              Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel x:Name="EulaBody" Spacing="8" Margin="28,16,44,16"/>
+                </ScrollViewer>
+
+                <!-- Action buttons (accept/decline mode) -->
+                <Border x:Name="AcceptDeclineFooter"
+                        Grid.Row="2"
+                        Padding="28,16,28,20"
+                        BorderBrush="{DynamicResource BorderColorBrush}"
+                        BorderThickness="0,1,0,0">
+                    <StackPanel Spacing="8">
+                        <WrapPanel>
+                            <Button x:Name="RemedyButton" Content="Decline change / billing review" IsVisible="False" Click="OnRemedyClick" />
+                        </WrapPanel>
+                        <DockPanel>
+                        <TextBlock x:Name="ScrollHintText"
+                                   Text="&#x2193; Scroll to the bottom to enable Accept"
+                                   FontSize="12"
+                                   Opacity="0.55"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   DockPanel.Dock="Left"/>
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Right"
+                                    Spacing="12"
+                                    DockPanel.Dock="Right">
+                            <Button x:Name="DeclineButton"
+                                    Content="Exit"
+                                    MinWidth="121"
+                                    Height="39"
+                                    Click="OnDeclineClick"/>
+                            <Button x:Name="AcceptButton"
+                                    Content="I Accept"
+                                    MinWidth="121"
+                                    Height="39"
+                                    IsEnabled="False"
+                                    Classes="accent"
+                                    Click="OnAcceptClick"/>
+                        </StackPanel>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Action buttons (read-only mode) -->
+                <Border x:Name="CloseFooter"
+                        Grid.Row="2"
+                        Padding="28,16,28,20"
+                        BorderBrush="{DynamicResource BorderColorBrush}"
+                        BorderThickness="0,1,0,0"
+                        IsVisible="False">
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                Spacing="12">
+                        <Button Content="Open / save copy" Click="OnOpenCopyClick" />
+                        <Button x:Name="CloseButton"
+                                Content="Close"
+                                MinWidth="121"
+                                Height="39"
+                                Classes="accent"
+                                Click="OnCloseClick"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

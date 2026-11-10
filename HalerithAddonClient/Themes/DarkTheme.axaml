@@ -1,0 +1,31 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Background and Surface Brushes -->
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#0F1117"/>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#1A1D27"/>
+    <SolidColorBrush x:Key="SurfaceHoverBrush" Color="#232635"/>
+    <SolidColorBrush x:Key="BorderColorBrush" Color="#2D3149"/>
+
+    <!-- Accent Brushes -->
+    <SolidColorBrush x:Key="AccentBlueBrush" Color="#2563EB"/>
+    <SolidColorBrush x:Key="AccentBlueDarkBrush" Color="#1D4ED8"/>
+
+    <!-- Text Brushes -->
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F8FAFC"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#94A3B8"/>
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#64748B"/>
+
+    <!-- Status Brushes -->
+    <SolidColorBrush x:Key="SuccessBrush" Color="#10B981"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#F59E0B"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="#EF4444"/>
+
+    <!-- Progress Bar -->
+    <SolidColorBrush x:Key="ProgressBarFillBrush" Color="#2563EB"/>
+
+    <!-- Font Families -->
+    <FontFamily x:Key="BodyFontFamily">avares://Avalonia.Fonts.Inter/Assets#Inter, Segoe UI, .AppleSystemUIFont, Helvetica Neue, Ubuntu</FontFamily>
+    <FontFamily x:Key="MonoFontFamily">Consolas, Menlo, Ubuntu Mono</FontFamily>
+
+</ResourceDictionary>

@@ -1,0 +1,317 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="HalerithAddonClient.Windows.ServerSettingsWindow"
+        Title="Server Settings"
+        Width="720" Height="600"
+        MinWidth="640" MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        Background="{DynamicResource BackgroundBrush}">
+
+    <Grid RowDefinitions="*,Auto">
+        <TabControl Grid.Row="0"
+                    x:Name="_tabControl"
+                    Background="{DynamicResource BackgroundBrush}">
+
+            <TabItem Header="Settings">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock x:Name="_serverTitleLabel"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextBrush}"
+                                   Margin="0,0,0,4"/>
+                        <TextBlock x:Name="_serverRuntimeLabel"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextMutedBrush}"
+                                   Margin="0,0,0,14"/>
+
+                        <CheckBox x:Name="_secondaryCheckBox"
+                                  Content="Secondary"
+                                  Margin="0,0,0,10"
+                                  Checked="SecondaryCheckBox_Changed"
+                                  Unchecked="SecondaryCheckBox_Changed"
+                                  ToolTip.Tip="Secondary servers mirror another server's build, settings, and rules"/>
+
+                        <StackPanel x:Name="_secondaryPanel"
+                                    Orientation="Vertical"
+                                    IsVisible="False"
+                                    Margin="0,0,0,14">
+                            <TextBlock Text="Primary Server"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       Margin="0,0,0,4"/>
+                            <ComboBox x:Name="_primaryServerComboBox"
+                                      Width="320"
+                                      HorizontalAlignment="Left"
+                                      ToolTip.Tip="The server this secondary mirrors"/>
+                        </StackPanel>
+
+                        <StackPanel x:Name="_primarySettingsPanel" Orientation="Vertical">
+                            <TextBlock Text="Modpack file action" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                            <ComboBox x:Name="_modpackFilePolicy" HorizontalAlignment="Stretch" Margin="0,0,0,6"/>
+                            <TextBlock x:Name="_modpackPolicyNotice" Text="Applies to pack configuration and bundled files, not ordinary addons. Manager-enforced configuration overrides this preference."
+                                       TextWrapping="Wrap" FontSize="12" Margin="0,0,0,16" Foreground="{DynamicResource TextMutedBrush}"/>
+                            <TextBlock Text="Java Launch Settings"
+                                       FontSize="15" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextBrush}"
+                                       Margin="0,2,0,4"/>
+                            <TextBlock Text="Configure how the JVM is started when launching this server."
+                                       Foreground="{DynamicResource TextMutedBrush}"
+                                       FontSize="12" TextWrapping="Wrap"
+                                       Margin="0,0,0,14"/>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16" Spacing="20">
+                                <RadioButton x:Name="_javaModeAuto"
+                                             Content="Default" GroupName="JavaMode"
+                                             IsChecked="True"
+                                             Click="JavaModeRadio_Click"/>
+                                <RadioButton x:Name="_javaModeManual"
+                                             Content="Manual" GroupName="JavaMode"
+                                             Click="JavaModeRadio_Click"/>
+                                <RadioButton x:Name="_javaModeCustom"
+                                             Content="Custom" GroupName="JavaMode"
+                                             Click="JavaModeRadio_Click"/>
+                            </StackPanel>
+
+                            <StackPanel x:Name="_javaAutoPanel" IsVisible="True">
+                                <TextBlock Text="Default uses 4 GB maximum memory with G1GC."
+                                           Foreground="{DynamicResource TextMutedBrush}"
+                                           FontSize="13" TextWrapping="Wrap"/>
+                            </StackPanel>
+
+                            <StackPanel x:Name="_javaManualPanel" IsVisible="False" Spacing="10">
+                                <TextBlock Text="Garbage Collection"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           Margin="0,0,0,4"/>
+                                <ComboBox x:Name="_javaGarbageCollectorComboBox"
+                                          Width="180"
+                                          HorizontalAlignment="Left">
+                                    <ComboBoxItem Content="ZGC"/>
+                                    <ComboBoxItem Content="ShenandoahGC"/>
+                                    <ComboBoxItem Content="G1GC"/>
+                                </ComboBox>
+
+                                <TextBlock Text="Maximum Memory (Xmx)"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           Margin="0,2,0,0"/>
+                                <Grid ColumnDefinitions="360,Auto">
+                                    <Slider x:Name="_javaMaxMemorySlider"
+                                            Minimum="2"
+                                            Maximum="16"
+                                            Value="4"
+                                            TickFrequency="1"
+                                            IsSnapToTickEnabled="True"
+                                            Margin="0,0,12,0"
+                                            ValueChanged="JavaMaxMemorySlider_ValueChanged"/>
+                                    <TextBlock Grid.Column="1"
+                                               x:Name="_javaMaxMemoryValueLabel"
+                                               Text="4 GB"
+                                               Foreground="{DynamicResource TextBrush}"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </StackPanel>
+
+                            <StackPanel x:Name="_javaCustomPanel" IsVisible="False" Spacing="8">
+                                <TextBlock Text="Enter JVM arguments to use before the Minecraft main class. The java path, classpath, natives path, and main class are added automatically."
+                                           Foreground="{DynamicResource TextMutedBrush}"
+                                           FontSize="12" TextWrapping="Wrap"
+                                           MaxWidth="600"
+                                           HorizontalAlignment="Left"
+                                           Margin="0,0,0,4"/>
+                                <TextBox x:Name="_javaCustomArgsBox"
+                                         HorizontalAlignment="Stretch"
+                                         Height="80"
+                                         AcceptsReturn="True"
+                                         TextWrapping="Wrap"
+                                         Watermark="-Xmx4G -XX:+UseZGC -XX:+UnlockExperimentalVMOptions"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Build" x:Name="_buildTab">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="Build: " FontSize="13"
+                                       Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="_buildInfoLabel" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <Border Background="{DynamicResource SurfaceBrush}"
+                                BorderBrush="{DynamicResource BorderColorBrush}"
+                                BorderThickness="1" Padding="8" Margin="0,0,0,8"
+                                MaxHeight="280">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ItemsControl x:Name="_readinessItemsControl">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                                <TextBlock Text="{Binding StatusIcon}" Width="20" FontSize="13"
+                                                           VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Label}" FontSize="12"
+                                                           Foreground="{DynamicResource TextBrush}"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <Button x:Name="_buildEnvButton" Content="Build"
+                                    MinWidth="101" Height="33"
+                                    Click="BuildEnvironment_Click"
+                                    ToolTip.Tip="Download and build the game environment for this server"/>
+                            <Button x:Name="_openServerFolderButton"
+                                    Content="Open Folder"
+                                    MinWidth="111"
+                                    Height="33"
+                                    Margin="8,0,0,0"
+                                    Click="OpenServerFolder_Click"
+                                    ToolTip.Tip="Open this server's local Minecraft instance folder"/>
+                            <Grid Margin="12,0,0,0" VerticalAlignment="Center" MinWidth="260">
+                                <ProgressBar x:Name="_buildProgressBar"
+                                             Height="24" Minimum="0" Maximum="100" Value="0"
+                                             IsVisible="False"
+                                             Background="{DynamicResource SurfaceBrush}"
+                                             Foreground="{DynamicResource AccentBrush}"/>
+                                <TextBlock x:Name="_buildStatusLabel" Text=""
+                                           Foreground="{DynamicResource TextMutedBrush}"
+                                           FontSize="13" VerticalAlignment="Center"
+                                           HorizontalAlignment="Left"/>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Rules" x:Name="_rulesTab">
+                <Grid RowDefinitions="2*,3*" Margin="12">
+                    <Border Grid.Row="0"
+                            Margin="0,0,0,6"
+                            BorderThickness="1"
+                            BorderBrush="{DynamicResource BorderColorBrush}"
+                            Background="{DynamicResource SurfaceBrush}"
+                            Padding="8">
+                        <Grid RowDefinitions="Auto,*,Auto">
+                            <TextBlock Grid.Row="0"
+                                       Text="Ignore Rules"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextBrush}"
+                                       Margin="0,0,0,6"/>
+                            <DataGrid x:Name="_ignoreRulesGrid"
+                                      Grid.Row="1"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True"
+                                      SelectionMode="Single"
+                                      BorderThickness="1"
+                                      BorderBrush="{DynamicResource BorderColorBrush}"
+                                      GridLinesVisibility="Horizontal"
+                                      HorizontalGridLinesBrush="{DynamicResource BorderColorBrush}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Type"
+                                                        Binding="{Binding TypeDisplay}"
+                                                        Width="130"/>
+                                    <DataGridTextColumn Header="Pattern (filename or stem)"
+                                                        Binding="{Binding Pattern}"
+                                                        Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0">
+                                <Button Content="Add Mod Rule"
+                                        Margin="0,0,8,0"
+                                        Click="AddModIgnoreRule_Click"/>
+                                <Button Content="Add Resource Pack Rule"
+                                        Margin="0,0,8,0"
+                                        Click="AddPackIgnoreRule_Click"/>
+                                <Button Content="Add Shader Rule"
+                                        Margin="0,0,8,0"
+                                        Click="AddShaderIgnoreRule_Click"/>
+                                <Button Content="Remove Selected"
+                                        Click="RemoveIgnoreRule_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="1"
+                            BorderThickness="1"
+                            BorderBrush="{DynamicResource BorderColorBrush}"
+                            Background="{DynamicResource SurfaceBrush}"
+                            Padding="8">
+                        <Grid RowDefinitions="Auto,*,Auto">
+                            <TextBlock Grid.Row="0"
+                                       Text="Local Pinned Items"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextBrush}"
+                                       Margin="0,0,0,6"/>
+                            <DataGrid x:Name="_pinnedItemsGrid"
+                                      Grid.Row="1"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True"
+                                      SelectionMode="Single"
+                                      BorderThickness="1"
+                                      BorderBrush="{DynamicResource BorderColorBrush}"
+                                      GridLinesVisibility="Horizontal"
+                                      HorizontalGridLinesBrush="{DynamicResource BorderColorBrush}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Type"
+                                                        Binding="{Binding TypeDisplay}"
+                                                        Width="130"/>
+                                    <DataGridTextColumn Header="Local File"
+                                                        Binding="{Binding FileName}"
+                                                        Width="2*"/>
+                                    <DataGridTextColumn Header="Server Item"
+                                                        Binding="{Binding ServerName}"
+                                                        Width="2*"/>
+                                    <DataGridTextColumn Header="Slug"
+                                                        Binding="{Binding Slug}"
+                                                        Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,6,0,0">
+                                <Button x:Name="_addMappingButton"
+                                        Content="Add Mapping"
+                                        IsEnabled="False"
+                                        Margin="0,0,8,0"
+                                        Click="AddPinnedItem_Click"/>
+                                <Button Content="Remove Selected"
+                                        Click="RemovePinnedItem_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <Border Grid.Row="1"
+                Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderColorBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="12,10">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <Button x:Name="_saveButton" Content="Save"
+                            Classes="accent"
+                            MinWidth="101" Height="33" Padding="14,0"
+                            Click="SaveButton_Click"/>
+                    <Button Content="Cancel"
+                            MinWidth="101" Height="33" Padding="14,0" Margin="8,0,0,0"
+                            Click="CancelButton_Click"/>
+                </StackPanel>
+
+                <TextBlock x:Name="_footerStatusLabel"
+                           Text="" FontSize="12"
+                           Foreground="{DynamicResource TextMutedBrush}"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"/>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

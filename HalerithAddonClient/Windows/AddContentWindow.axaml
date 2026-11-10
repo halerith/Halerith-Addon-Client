@@ -1,0 +1,115 @@
+<Window x:Class="HalerithAddonClient.Windows.AddContentWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Add Content"
+        Width="960"
+        Height="680"
+        MinWidth="700"
+        MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BackgroundBrush}">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+        <!-- ── Row 0: Source tabs (Modrinth / CurseForge) ─────────────── -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="20,16,20,0" Spacing="4">
+            <Button x:Name="_modrinthTabButton"
+                    Content="Modrinth"
+                    Height="33"
+                    MinWidth="101"
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    CornerRadius="6"
+                    Padding="14,0"
+                    Click="ModrinthTabButton_Click"/>
+            <Button x:Name="_curseForgeTabButton"
+                    Content="CurseForge"
+                    Height="33"
+                    MinWidth="101"
+                    FontSize="13"
+                    FontWeight="SemiBold"
+                    CornerRadius="6"
+                    Padding="14,0"
+                    Click="CurseForgeTabButton_Click"/>
+        </StackPanel>
+
+        <!-- ── Row 1: Search box ──────────────────────────────────────── -->
+        <TextBox x:Name="_searchTextBox"
+                 Grid.Row="1"
+                 Watermark="Search…"
+                 Margin="20,12,20,0"
+                 FontSize="14"
+                 Height="38"/>
+
+        <!-- ── Row 2: Content type + locked filters ───────────────────── -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="20,10,20,0" Spacing="10">
+            <ComboBox x:Name="_contentTypeComboBox"
+                      Width="161"
+                      Height="33"
+                      FontSize="12"
+                      SelectedIndex="0"
+                      SelectionChanged="ContentTypeComboBox_SelectionChanged">
+                <ComboBoxItem Content="Mods" Tag="mod"/>
+                <ComboBoxItem Content="Resource Packs" Tag="resource_pack"/>
+                <ComboBoxItem Content="Shaders" Tag="shader"/>
+            </ComboBox>
+
+            <!-- MC version badge -->
+            <Border Background="#1E293B"
+                    CornerRadius="12"
+                    Padding="10,4"
+                    VerticalAlignment="Center">
+                <TextBlock x:Name="_mcVersionBadge"
+                           Text="MC …"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           VerticalAlignment="Center"/>
+            </Border>
+
+            <!-- Loader badge (hidden for vanilla) -->
+            <Border x:Name="_loaderBadge"
+                    Background="#1E293B"
+                    CornerRadius="12"
+                    Padding="10,4"
+                    VerticalAlignment="Center"
+                    IsVisible="False">
+                <TextBlock x:Name="_loaderBadgeText"
+                           Text=""
+                           FontSize="12"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           VerticalAlignment="Center"/>
+            </Border>
+
+            <!-- Loading indicator -->
+            <TextBlock x:Name="_statusText"
+                       Text=""
+                       FontSize="12"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource TextMutedBrush}"
+                       Margin="10,0,0,0"/>
+        </StackPanel>
+
+        <!-- ── Row 3: Results grid ────────────────────────────────────── -->
+        <ScrollViewer Grid.Row="3"
+                      Margin="20,12,20,16"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+            <WrapPanel x:Name="_resultsPanel"
+                       Orientation="Horizontal"/>
+        </ScrollViewer>
+    </Grid>
+
+    <!-- ── Version picker overlay (hidden by default) ─────────────────── -->
+    <Window.Styles>
+        <!-- Active source tab -->
+        <Style Selector="Button.source-active">
+            <Setter Property="Background" Value="{DynamicResource AccentBlueBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <!-- Inactive source tab -->
+        <Style Selector="Button.source-inactive">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+        </Style>
+    </Window.Styles>
+</Window>

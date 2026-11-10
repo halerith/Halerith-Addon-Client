@@ -1,0 +1,119 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="HalerithAddonClient.LogSubmitDialog"
+        Title="Send Diagnostics"
+        Width="600" Height="650"
+        MinWidth="520" MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        CanResize="True"
+        Background="{DynamicResource BackgroundBrush}">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <TextBlock Grid.Row="0" Text="Send Diagnostics" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="24,20,24,0"/>
+
+        <!-- Main content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24,18,24,12">
+
+            <TextBlock Text="Information included"
+                       FontSize="13"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,5"/>
+            <TextBlock Text="• Halerith Addon Client diagnostic events from the last 24 hours, with sensitive values redacted&#10;• Client, operating-system, architecture, memory, disk, runtime-instance, and Java process metrics&#10;• Halerith service and licence health&#10;• Your notes and selected attachment, if provided"
+                       TextWrapping="Wrap"
+                       FontSize="12"
+                       LineHeight="18"
+                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+            <TextBlock Text="Minecraft instance, console, debug and crash logs are included only if you select them below. Generated text is checked for common sensitive values, but redaction cannot guarantee every detail is removed. Your notes and selected attachment are sent as provided; review them before submitting."
+                       TextWrapping="Wrap"
+                       FontSize="11"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       Margin="0,7,0,6"/>
+            <TextBlock Text="Submitted diagnostics, notes, and attachments are used to investigate your support request and retained as described in our Privacy Policy."
+                       TextWrapping="Wrap"
+                       FontSize="11"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       Margin="0,0,0,2"/>
+            <TextBlock Text="Privacy Policy"
+                       FontSize="11"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       TextDecorations="Underline"
+                       Cursor="Hand"
+                       Margin="0,0,0,13"
+                       PointerPressed="PrivacyPolicyLink_PointerPressed"/>
+
+            <CheckBox x:Name="_includeGameLogsCheckBox" Content="Include Minecraft logs and crash reports"
+                      HorizontalAlignment="Left" Margin="0,0,0,6"
+                      IsChecked="False" Checked="GameLogsSelectionChanged" Unchecked="GameLogsSelectionChanged"/>
+            <ComboBox x:Name="_gameInstanceComboBox" IsEnabled="False" MaxWidth="400"
+                      HorizontalAlignment="Left" MinWidth="260" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_gameLogsNote" Text="Choose one instance. Available latest.log, debug.log, captured console output, and the two newest crash reports are included. Each is redacted and limited to its latest 4 MB. Logs may still contain personal or server details."
+                       TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"
+                       Margin="0,0,0,15"/>
+
+            <TextBlock Text="Additional details (optional)"
+                       FontSize="12"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       Margin="0,0,0,4"/>
+
+            <TextBox x:Name="_notesBox"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     Height="115"
+                     Padding="6"
+                     FontSize="13"
+                     VerticalContentAlignment="Top"
+                     Watermark="Describe what happened, what you were doing, or any other relevant information…"/>
+
+            <TextBlock Text="Attachment (optional, max 1 MB)"
+                       FontSize="12"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       Margin="0,12,0,4"/>
+
+            <DockPanel LastChildFill="True">
+                <Button x:Name="_browseButton"
+                        DockPanel.Dock="Right"
+                        Content="Browse…"
+                        Height="31"
+                        Padding="12,0"
+                        Margin="6,0,0,0"
+                        Click="BrowseButton_Click"/>
+                <TextBox x:Name="_attachmentPathBox"
+                         Height="30"
+                         IsReadOnly="True"
+                         Padding="6,0"
+                         FontSize="12"
+                         VerticalContentAlignment="Center"
+                         Watermark="No file selected"/>
+            </DockPanel>
+
+            <TextBlock x:Name="_attachmentErrorText"
+                       Foreground="{DynamicResource DangerBrush}"
+                       FontSize="11"
+                       Margin="0,4,0,0"
+                       IsVisible="False"/>
+        </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderColorBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="12,10">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Cancel" Classes="subtle"
+                        MinWidth="91" Height="33" Padding="14,0"
+                        Click="CancelButton_Click"/>
+                <Button x:Name="_submitButton"
+                        Content="Submit"
+                        Classes="accent"
+                        MinWidth="91" Height="33" Padding="14,0" Margin="8,0,0,0"
+                        Click="SubmitButton_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

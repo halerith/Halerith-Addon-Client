@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup Condition="Exists('$(MSBuildThisFileDirectory)..\Build\build.ps1') and '$(ArtifactsPath)' == ''">
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <ArtifactsPath>$(MSBuildThisFileDirectory)..\Build\Client-Open\artifacts\ide</ArtifactsPath>
+  </PropertyGroup>
+</Project>

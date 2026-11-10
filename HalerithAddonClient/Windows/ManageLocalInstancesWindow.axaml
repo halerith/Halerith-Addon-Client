@@ -1,0 +1,104 @@
+<Window x:Class="HalerithAddonClient.Windows.ManageLocalInstancesWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Manage Local Instances"
+        Width="640" Height="480"
+        MinWidth="520" MinHeight="380"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        SystemDecorations="BorderOnly"
+        ShowInTaskbar="False"
+        Background="{DynamicResource BackgroundBrush}">
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto,Auto" Margin="20,16">
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0"
+                   Text="Local Instances"
+                   FontSize="16"
+                   FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextPrimaryBrush}"
+                   Margin="0,0,0,12"/>
+
+        <!-- Instance grid -->
+        <DataGrid x:Name="_instancesGrid" Grid.Row="1"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  BorderThickness="1"
+                  BorderBrush="{DynamicResource BorderColorBrush}"
+                  GridLinesVisibility="Horizontal"
+                  HorizontalGridLinesBrush="{DynamicResource BorderColorBrush}">
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Name"
+                                    Binding="{Binding Instance.Name}"
+                                    Width="140"/>
+                <DataGridTextColumn Header="MC Version"
+                                    Binding="{Binding Instance.MinecraftVersion}"
+                                    Width="121"/>
+                <DataGridTextColumn Header="Loader"
+                                    Binding="{Binding Instance.LoaderDisplayName}"
+                                    Width="130"/>
+                <DataGridTextColumn Header="Build"
+                                    Binding="{Binding BuildStatusText}"
+                                    Width="120"/>
+                <DataGridTextColumn Header="Server"
+                                    Binding="{Binding Instance.ServerAddress}"
+                                    Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Build progress (hidden until a build starts) -->
+        <StackPanel Grid.Row="2"
+                    x:Name="_buildProgressPanel"
+                    IsVisible="False"
+                    Margin="0,10,0,0"
+                    Spacing="4">
+            <DockPanel>
+                <TextBlock x:Name="_buildStatusLabel"
+                           Text="Building…"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           DockPanel.Dock="Left"/>
+                <TextBlock x:Name="_buildPercentLabel"
+                           Text=""
+                           FontSize="12"
+                           Foreground="{DynamicResource TextMutedBrush}"
+                           HorizontalAlignment="Right"/>
+            </DockPanel>
+            <ProgressBar x:Name="_buildProgressBar"
+                         Height="4"
+                         Minimum="0"
+                         Maximum="100"
+                         Value="0"
+                         BorderThickness="0"/>
+        </StackPanel>
+
+        <!-- Action buttons -->
+        <DockPanel Grid.Row="3"
+                   Margin="0,12,0,0">
+            <StackPanel DockPanel.Dock="Left"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                <Button Content="Add"
+                        MinWidth="81"
+                        Click="AddButton_Click"/>
+                <Button x:Name="_removeButton"
+                        Content="Remove"
+                        MinWidth="81"
+                        Click="RemoveButton_Click"/>
+                <Button x:Name="_buildButton"
+                        Content="Build"
+                        MinWidth="81"
+                        Click="BuildButton_Click"/>
+            </StackPanel>
+
+            <Button Content="Close"
+                    Classes="subtle"
+                    MinWidth="81"
+                    HorizontalAlignment="Right"
+                    Click="CloseButton_Click"/>
+        </DockPanel>
+    </Grid>
+</Window>

@@ -1,0 +1,34 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="HalerithAddonClient.SelectionDialog"
+        Width="560" Height="500"
+        MinWidth="400" MinHeight="320"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <ListBox x:Name="_listBox"
+                 Grid.Row="0"
+                 Margin="12,12,12,0"
+                 FontSize="13"
+                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                 DoubleTapped="ListBox_DoubleTapped"/>
+
+        <Border Grid.Row="1"
+                Background="{DynamicResource BackgroundAlt2Brush}"
+                BorderBrush="{DynamicResource SeparatorBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="12,8">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="_okButton" Content="OK"
+                        Classes="accent"
+                        MinWidth="91" Height="33" Padding="14,0"
+                        Click="OkButton_Click"/>
+                <Button Content="Cancel"
+                        MinWidth="91" Height="33" Padding="14,0" Margin="8,0,0,0"
+                        Click="CancelButton_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

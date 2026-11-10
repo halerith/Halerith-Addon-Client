@@ -1,0 +1,333 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+         Named control styles using Avalonia class selector syntax.
+         Apply these styles by setting Classes="accent" on the control.
+
+         Colour references come from DarkTheme.axaml and Dark.axaml,
+         which must be loaded BEFORE this stylesheet.
+    -->
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         TextBox — override background to match the content-area grey.
+         Mirrors the WPF Shared.xaml implicit TextBox override that used
+         LogBackgroundBrush for the content area text boxes.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="TextBox.log-background">
+        <Setter Property="Background" Value="{DynamicResource LogBackgroundBrush}"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Accent Button — Primary action button (blue).
+         Used via Classes="accent" on Button elements.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="Button.accent">
+        <Setter Property="Background" Value="{StaticResource AccentBlueBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBlueBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="CornerRadius" Value="6"/>
+    </Style>
+
+    <Style Selector="Button.accent:pointerover /template/ Border#border">
+        <Setter Property="Background" Value="#3B82F6"/>
+        <Setter Property="BorderBrush" Value="#3B82F6"/>
+    </Style>
+
+    <Style Selector="Button.accent:pressed /template/ Border#border">
+        <Setter Property="Background" Value="{StaticResource AccentBlueDarkBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBlueDarkBrush}"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Success Button — Mojang / vanilla launcher (Launch Game).
+         Base: dark Minecraft green (#1E6823).
+         Hover: bright Minecraft green (#62B33A).
+         Pressed: deeper green (#155218).
+         Disabled: 50% opacity — matches WPF SuccessButtonStyle.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="Button.success">
+        <Setter Property="Background" Value="#1E6823"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="#1E6823"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="CornerRadius" Value="6"/>
+    </Style>
+
+    <Style Selector="Button.success:pointerover /template/ Border#border">
+        <Setter Property="Background" Value="#62B33A"/>
+        <Setter Property="BorderBrush" Value="#62B33A"/>
+    </Style>
+
+    <Style Selector="Button.success:pressed /template/ Border#border">
+        <Setter Property="Background" Value="#155218"/>
+        <Setter Property="BorderBrush" Value="#155218"/>
+    </Style>
+
+    <Style Selector="Button.success:disabled /template/ Border#border">
+        <Setter Property="Opacity" Value="0.5"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         CurseForge Button — used when Launch opens the CurseForge app.
+         Base: dark burnt orange (#B84800).
+         Hover: lighter CurseForge orange (#E06020).
+         Pressed: deeper orange (#8C3500).
+         Disabled: 50% opacity — matches WPF CurseForgeButtonStyle.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="Button.curseforge">
+        <Setter Property="Background" Value="#B84800"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="#B84800"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="CornerRadius" Value="6"/>
+    </Style>
+
+    <Style Selector="Button.curseforge:pointerover /template/ Border#border">
+        <Setter Property="Background" Value="#E06020"/>
+        <Setter Property="BorderBrush" Value="#E06020"/>
+    </Style>
+
+    <Style Selector="Button.curseforge:pressed /template/ Border#border">
+        <Setter Property="Background" Value="#8C3500"/>
+        <Setter Property="BorderBrush" Value="#8C3500"/>
+    </Style>
+
+    <Style Selector="Button.curseforge:disabled /template/ Border#border">
+        <Setter Property="Opacity" Value="0.5"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Warning Button — Caution/warning action.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="Button.warning">
+        <Setter Property="Background" Value="{StaticResource WarningBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource WarningBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="CornerRadius" Value="6"/>
+    </Style>
+
+    <Style Selector="Button.warning:pointerover /template/ Border#border">
+        <Setter Property="Opacity" Value="0.85"/>
+    </Style>
+
+    <Style Selector="Button.warning:disabled /template/ Border#border">
+        <Setter Property="Opacity" Value="0.5"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Danger Button — Destructive action.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="Button.danger">
+        <Setter Property="Background" Value="#991B1B"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="#991B1B"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="CornerRadius" Value="6"/>
+    </Style>
+
+    <Style Selector="Button.danger:pointerover /template/ Border#border">
+        <Setter Property="Background" Value="#DC2626"/>
+        <Setter Property="BorderBrush" Value="#DC2626"/>
+    </Style>
+
+    <Style Selector="Button.danger:pressed /template/ Border#border">
+        <Setter Property="Background" Value="#7F1D1D"/>
+        <Setter Property="BorderBrush" Value="#7F1D1D"/>
+    </Style>
+
+    <Style Selector="Button.danger:disabled /template/ Border#border">
+        <Setter Property="Opacity" Value="0.5"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Subtle Button — Secondary action, lower emphasis.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="Button.subtle">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+
+    <Style Selector="Button.subtle:pointerover">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Background" Value="{StaticResource SurfaceHoverBrush}"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Hyperlink Button — Looks like a clickable text link.
+         Used in the About tab and anywhere a URL-style button is needed.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="Button.hyperlink">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Foreground" Value="{StaticResource AccentBlueBrush}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+
+    <Style Selector="Button.hyperlink:pointerover">
+        <Setter Property="Foreground" Value="{StaticResource AccentBlueDarkBrush}"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         DataGridCell Status Styles — coloured cell backgrounds.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="DataGridCell.status-ok">
+        <Setter Property="Background" Value="{StaticResource SuccessBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+    </Style>
+
+    <Style Selector="DataGridCell.status-warning">
+        <Setter Property="Background" Value="{StaticResource WarningBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+    </Style>
+
+    <Style Selector="DataGridCell.status-error">
+        <Setter Property="Background" Value="{StaticResource DangerBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+    </Style>
+
+    <Style Selector="DataGridCell.status-idle">
+        <Setter Property="Background" Value="{StaticResource SurfaceHoverBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Row Tint Styles — Apply to entire DataGridRow based on content status.
+         These work because Controls.axaml sets DataGridCell background to
+         Transparent, allowing the row colour to show through.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="DataGridRow.action">
+        <Setter Property="Background" Value="{DynamicResource RowActionBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource RowActionTextBrush}"/>
+    </Style>
+
+    <Style Selector="DataGridRow.up-to-date">
+        <Setter Property="Background" Value="{DynamicResource RowUpToDateBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource RowUpToDateTextBrush}"/>
+    </Style>
+
+    <Style Selector="DataGridRow.present">
+        <Setter Property="Background" Value="{DynamicResource RowPresentBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource RowPresentTextBrush}"/>
+    </Style>
+
+    <Style Selector="DataGridRow.ignored">
+        <Setter Property="Background" Value="{DynamicResource RowIgnoredBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource RowIgnoredTextBrush}"/>
+    </Style>
+
+    <Style Selector="DataGridRow.pending">
+        <Setter Property="Background" Value="{DynamicResource RowPendingBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource RowPendingTextBrush}"/>
+    </Style>
+
+    <Style Selector="DataGridRow.no-version">
+        <Setter Property="Background" Value="{DynamicResource RowNoVersionBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource RowNoVersionTextBrush}"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         TextBlock Semantic Styles
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="TextBlock.error">
+        <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+    </Style>
+
+    <Style Selector="TextBlock.warning">
+        <Setter Property="Foreground" Value="{StaticResource WarningBrush}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+    </Style>
+
+    <Style Selector="TextBlock.success">
+        <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+    </Style>
+
+    <Style Selector="TextBlock.muted">
+        <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+        <Setter Property="FontSize" Value="12"/>
+    </Style>
+
+    <Style Selector="TextBlock.monospace">
+        <Setter Property="FontFamily" Value="{StaticResource MonoFontFamily}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Badge Style — Small labeled element with rounded corners.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="Border.badge">
+        <Setter Property="Background" Value="{StaticResource AccentBlueBrush}"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="6,2"/>
+    </Style>
+
+    <Style Selector="Border.badge.success">
+        <Setter Property="Background" Value="{StaticResource SuccessBrush}"/>
+    </Style>
+
+    <Style Selector="Border.badge.warning">
+        <Setter Property="Background" Value="{StaticResource WarningBrush}"/>
+    </Style>
+
+    <Style Selector="Border.badge.danger">
+        <Setter Property="Background" Value="{StaticResource DangerBrush}"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Card Style — Container with subtle background and border.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderColorBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="12"/>
+    </Style>
+
+    <Style Selector="Border.card-elevated">
+        <Setter Property="Background" Value="{StaticResource SurfaceHoverBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderColorBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="12"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Divider / Separator Style
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="Rectangle.divider">
+        <Setter Property="Fill" Value="{StaticResource BorderColorBrush}"/>
+        <Setter Property="Height" Value="1"/>
+    </Style>
+
+    <Style Selector="Rectangle.divider-vertical">
+        <Setter Property="Fill" Value="{StaticResource BorderColorBrush}"/>
+        <Setter Property="Width" Value="1"/>
+    </Style>
+
+</Styles>

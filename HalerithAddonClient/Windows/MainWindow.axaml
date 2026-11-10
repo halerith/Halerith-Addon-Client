@@ -1,0 +1,1631 @@
+<Window x:Class="HalerithAddonClient.Windows.MainWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:HalerithAddonClient.ViewModels"
+        xmlns:conv="using:HalerithAddonClient.Converters"
+        xmlns:dg="using:Avalonia.Controls"
+        Title="Halerith Addon Client"
+        Width="1260" Height="820"
+        MinWidth="1080" MinHeight="680"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <conv:ConsoleLineBrushConverter x:Key="ConsoleLineBrushConverter"/>
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector="Button.account-delete">
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+        </Style>
+        <Style Selector="ComboBoxItem:pointerover Button.account-delete">
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="IsHitTestVisible" Value="True"/>
+        </Style>
+        <Style Selector="Button.account-delete:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="#991B1B"/>
+            <Setter Property="BorderBrush" Value="#991B1B"/>
+        </Style>
+        <Style Selector="Button.account-add-row">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="8,6"/>
+        </Style>
+        <Style Selector="Button.account-add-row:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SurfaceHoverBrush}"/>
+        </Style>
+        <Style Selector="Button.content-project-link">
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+        <Style Selector="DataGridRow:pointerover Button.content-project-link">
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="IsHitTestVisible" Value="True"/>
+        </Style>
+        <Style Selector="Button.content-project-link:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColorBrush}"/>
+        </Style>
+        <Style Selector="HyperlinkButton.motd-inline-link">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#93C5FD"/>
+        </Style>
+        <Style Selector="Button.motd-close">
+            <Setter Property="Width" Value="25"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="MinWidth" Value="25"/>
+            <Setter Property="MinHeight" Value="25"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.motd-close:pointerover /template/ Border#border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColorBrush}"/>
+        </Style>
+    </Window.Styles>
+
+    <!-- Layout:
+         Column 0  — 220 px sidebar (Surface bg):  server list
+         Column 1  — 1 px divider
+         Column 2  — * main content area (Background bg)
+    -->
+
+    <Grid x:Name="_rootGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="1"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             COLUMN 0 — SERVER SIDEBAR
+        ══════════════════════════════════════════════════════════════════ -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource SurfaceBrush}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>   <!-- MC USER account -->
+                    <RowDefinition Height="Auto"/>   <!-- SERVERS header -->
+                    <RowDefinition Height="2*" MinHeight="0"/> <!-- server list -->
+                    <RowDefinition Height="5"/>      <!-- list splitter -->
+                    <RowDefinition Height="*" MinHeight="43"/> <!-- local instances section -->
+                    <RowDefinition Height="Auto"/>   <!-- Manage Local button -->
+                </Grid.RowDefinitions>
+
+                <!-- ── MC USER account ────────────────────────────────── -->
+                <Border x:Name="_accountSidebarPanel"
+                        Grid.Row="0"
+                        BorderBrush="{DynamicResource BorderColorBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="14,12,14,12">
+                    <StackPanel Orientation="Vertical"
+                                Spacing="8">
+                        <Button x:Name="_upgradeButton"
+                                Content="Upgrade"
+                                Classes="accent"
+                                Height="33"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                FontWeight="SemiBold"
+                                IsVisible="False"
+                                Click="UpgradeButton_Click"
+                                ToolTip.Tip="Upgrade Halerith Addon Client"/>
+
+                        <!-- Account selector — visible for Default-mode servers -->
+                        <StackPanel x:Name="_accountPanel"
+                                    Orientation="Vertical"
+                                    Spacing="8">
+                            <Border Background="{Binding AccessPillBackground}"
+                                    BorderBrush="{Binding AccessPillBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="8,2"
+                                    HorizontalAlignment="Stretch"
+                                    IsVisible="{Binding IsAccessPillVisible}">
+                                <TextBlock Text="{Binding AccessPillText}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           HorizontalAlignment="Center"
+                                           TextAlignment="Center"
+                                           Foreground="{Binding AccessPillForeground}"/>
+                            </Border>
+                            <ComboBox x:Name="_accountComboBox"
+                                      Height="33"
+                                      HorizontalAlignment="Stretch"
+                                      PlaceholderText="Sign into Minecraft"
+                                      SelectionChanged="AccountComboBox_SelectionChanged"
+                                      DropDownOpened="AccountComboBox_DropDownOpened"
+                                      DropDownClosed="AccountComboBox_DropDownClosed">
+                                <ComboBox.SelectionBoxItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="6"
+                                                    IsVisible="{Binding IsAccount}">
+                                            <Image Source="{Binding HeadImage}"
+                                                   Width="20"
+                                                   Height="20"
+                                                   Stretch="UniformToFill"
+                                                   IsVisible="{Binding HasHeadImage}"/>
+                                            <TextBlock Text="{Binding DisplayName}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.SelectionBoxItemTemplate>
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid MinWidth="180">
+                                            <Grid ColumnDefinitions="Auto,*,Auto"
+                                                  HorizontalAlignment="Stretch"
+                                                  IsVisible="{Binding IsAccount}">
+                                                <Image Grid.Column="0"
+                                                       Source="{Binding HeadImage}"
+                                                       Width="25"
+                                                       Height="25"
+                                                       Stretch="UniformToFill"
+                                                       Margin="0,0,8,0"
+                                                       IsVisible="{Binding HasHeadImage}"/>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding DisplayName}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           VerticalAlignment="Center"/>
+                                                <Button Grid.Column="2"
+                                                        Classes="account-delete"
+                                                        Content="✕"
+                                                        Width="25" Height="25"
+                                                        Padding="0"
+                                                        Margin="8,0,0,0"
+                                                        FontSize="11"
+                                                        Tag="{Binding}"
+                                                        ToolTip.Tip="Remove account"
+                                                        Click="AccountDeleteMenuButton_Click"/>
+                                            </Grid>
+                                            <Button Classes="account-add-row"
+                                                    Content="Add Account"
+                                                    HorizontalAlignment="Stretch"
+                                                    Height="31"
+                                                    IsVisible="{Binding IsAdd}"
+                                                    Click="AccountAddMenuButton_Click"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Account selector — visible for local instances -->
+                        <StackPanel x:Name="_localAccountPanel"
+                                    Orientation="Vertical"
+                                    IsVisible="False"
+                                    Spacing="8">
+                            <ComboBox x:Name="_localAccountComboBox"
+                                      Height="33"
+                                      HorizontalAlignment="Stretch"
+                                      PlaceholderText="Sign into Minecraft"
+                                      SelectionChanged="LocalAccountComboBox_SelectionChanged"
+                                      DropDownOpened="LocalAccountComboBox_DropDownOpened"
+                                      DropDownClosed="LocalAccountComboBox_DropDownClosed">
+                                <ComboBox.SelectionBoxItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="6"
+                                                    IsVisible="{Binding IsAccount}">
+                                            <Image Source="{Binding HeadImage}"
+                                                   Width="20"
+                                                   Height="20"
+                                                   Stretch="UniformToFill"
+                                                   IsVisible="{Binding HasHeadImage}"/>
+                                            <TextBlock Text="{Binding DisplayName}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.SelectionBoxItemTemplate>
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid MinWidth="180">
+                                            <Grid ColumnDefinitions="Auto,*,Auto"
+                                                  HorizontalAlignment="Stretch"
+                                                  IsVisible="{Binding IsAccount}">
+                                                <Image Grid.Column="0"
+                                                       Source="{Binding HeadImage}"
+                                                       Width="25"
+                                                       Height="25"
+                                                       Stretch="UniformToFill"
+                                                       Margin="0,0,8,0"
+                                                       IsVisible="{Binding HasHeadImage}"/>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding DisplayName}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           VerticalAlignment="Center"/>
+                                                <Button Grid.Column="2"
+                                                        Classes="account-delete"
+                                                        Content="✕"
+                                                        Width="25" Height="25"
+                                                        Padding="0"
+                                                        Margin="8,0,0,0"
+                                                        FontSize="11"
+                                                        Tag="{Binding}"
+                                                        ToolTip.Tip="Remove account"
+                                                        Click="LocalAccountDeleteMenuButton_Click"/>
+                                            </Grid>
+                                            <Button Classes="account-add-row"
+                                                    Content="Add Account"
+                                                    HorizontalAlignment="Stretch"
+                                                    Height="31"
+                                                    IsVisible="{Binding IsAdd}"
+                                                    Click="LocalAccountAddMenuButton_Click"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- ── SERVERS header ──────────────────────────────────── -->
+                <Border Grid.Row="1"
+                        x:Name="_serversHeader"
+                        BorderBrush="{DynamicResource BorderColorBrush}"
+                        BorderThickness="0"
+                        Padding="14,12,14,10">
+                    <TextBlock Text="SERVERS"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMutedBrush}"/>
+                </Border>
+
+                <!-- ── Server list ─────────────────────────────────────── -->
+                <ListBox x:Name="_serverListBox"
+                         Grid.Row="2"
+                         ItemsSource="{Binding Servers}"
+                         SelectedItem="{Binding SelectedServer}"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         Padding="0">
+
+                    <!-- Item styles for hover/selected states -->
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:pointerover">
+                            <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:selected">
+                            <Setter Property="Background" Value="{DynamicResource AccentBlueBrush}"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:selected TextBlock.server-name">
+                            <Setter Property="Foreground" Value="White"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:selected TextBlock.server-host">
+                            <Setter Property="Foreground" Value="White"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:selected TextBlock.server-sync">
+                            <Setter Property="Foreground" Value="White"/>
+                        </Style>
+                        <Style Selector="ListBoxItem Button.row-gear">
+                            <Setter Property="Opacity" Value="0"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:pointerover Button.row-gear">
+                            <Setter Property="Opacity" Value="1"/>
+                            <Setter Property="IsHitTestVisible" Value="True"/>
+                        </Style>
+                    </ListBox.Styles>
+
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:ServerItemViewModel}">
+                            <Border Padding="14,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>   <!-- online dot -->
+                                        <ColumnDefinition Width="*"/>      <!-- name + last-sync -->
+                                        <ColumnDefinition Width="Auto"/>   <!-- settings -->
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Online indicator dot
+                                         Grey  = offline / unknown
+                                         Green = online and data loaded
+                                         Yellow = actively refreshing/syncing (overrides green) -->
+                                    <Ellipse Grid.Column="0"
+                                             Width="8" Height="8"
+                                             Margin="0,0,10,0"
+                                             VerticalAlignment="Center"
+                                             Fill="{Binding StatusDotBrush}"
+                                             ToolTip.Tip="{Binding OnlineTooltip}"/>
+
+                                    <!-- Name + last-sync stack -->
+                                    <StackPanel Grid.Column="1" Orientation="Vertical">
+                                        <TextBlock Classes="server-name"
+                                                   Text="{Binding DisplayName}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        <!-- Host label — visible only when multiple servers -->
+                                        <TextBlock Classes="server-host"
+                                                   Text="{Binding HostLabel}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Margin="0,1,0,0"
+                                                   IsVisible="{Binding ShowHostLabel}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextMutedBrush}"/>
+                                        <TextBlock Classes="server-sync"
+                                                   Text="{Binding LastSyncText}"
+                                                   Margin="0,2,0,0"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextMutedBrush}"/>
+                                    </StackPanel>
+
+                                    <Button Grid.Column="2"
+                                            Content="⚙"
+                                            Width="25"
+                                            Height="25"
+                                            Padding="0"
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            Classes="subtle row-gear"
+                                            ToolTip.Tip="Server settings"
+                                            Click="ServerSettingsGearButton_Click"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <!-- ── Server/local splitter ──────────────────────────── -->
+                <GridSplitter Grid.Row="3"
+                              Height="5"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch"
+                              ResizeDirection="Rows"
+                              ResizeBehavior="PreviousAndNext"
+                              Background="Transparent"
+                              ToolTip.Tip="Resize server and local instance lists">
+                    <GridSplitter.Template>
+                        <ControlTemplate>
+                            <Border Height="1"
+                                    VerticalAlignment="Center"
+                                    Background="{DynamicResource BorderColorBrush}"/>
+                        </ControlTemplate>
+                    </GridSplitter.Template>
+                </GridSplitter>
+
+                <!-- ── Local instances section ────────────────────────── -->
+                <Grid Grid.Row="4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*" MinHeight="0"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- ── LOCAL INSTANCES header ──────────────────────── -->
+                    <Border Grid.Row="0"
+                            BorderBrush="{DynamicResource BorderColorBrush}"
+                            BorderThickness="0"
+                            Padding="14,10,14,8"
+                            x:Name="_localInstancesHeader">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Grid.Column="0"
+                                       Text="LOCAL INSTANCES"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextMutedBrush}"/>
+                            <Button Grid.Column="1"
+                                    Content="+"
+                                    Width="25"
+                                    Height="25"
+                                    Padding="0"
+                                    Classes="subtle"
+                                    FontSize="15"
+                                    FontWeight="SemiBold"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    ToolTip.Tip="Add local instance"
+                                    Click="LocalInstanceAddButton_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- ── Local instances list ────────────────────────── -->
+                    <ListBox x:Name="_localInstanceListBox"
+                             Grid.Row="1"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             Padding="0">
+
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:pointerover">
+                            <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:selected">
+                            <Setter Property="Background" Value="{DynamicResource AccentBlueBrush}"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:selected TextBlock.instance-name">
+                            <Setter Property="Foreground" Value="White"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:selected TextBlock.instance-detail">
+                            <Setter Property="Foreground" Value="White"/>
+                        </Style>
+                        <Style Selector="ListBoxItem Button.row-gear">
+                            <Setter Property="Opacity" Value="0"/>
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                        <Style Selector="ListBoxItem:pointerover Button.row-gear">
+                            <Setter Property="Opacity" Value="1"/>
+                            <Setter Property="IsHitTestVisible" Value="True"/>
+                        </Style>
+                    </ListBox.Styles>
+
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:LocalInstanceItemViewModel}">
+                            <Border Padding="14,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Ellipse Grid.Column="0"
+                                             Width="8" Height="8"
+                                             Margin="0,0,10,0"
+                                             VerticalAlignment="Center"
+                                             Fill="{Binding StatusDotBrush}"/>
+
+                                    <StackPanel Grid.Column="1" Orientation="Vertical">
+                                        <TextBlock Classes="instance-name"
+                                                   Text="{Binding DisplayName}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        <TextBlock Classes="instance-detail"
+                                                   Text="{Binding StatusText}"
+                                                   FontSize="11"
+                                                   Margin="0,2,0,0"
+                                                   Foreground="{DynamicResource TextMutedBrush}"/>
+                                    </StackPanel>
+
+                                    <Button Grid.Column="2"
+                                            Content="⚙"
+                                            Width="25"
+                                            Height="25"
+                                            Padding="0"
+                                            Margin="8,0,0,0"
+                                            VerticalAlignment="Center"
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            Classes="subtle row-gear"
+                                            ToolTip.Tip="Instance settings"
+                                            Click="LocalInstanceSettingsGearButton_Click"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+
+                <!-- ── Settings button ──────────────────────────────────── -->
+                <Border Grid.Row="5"
+                        BorderBrush="{DynamicResource BorderColorBrush}"
+                        BorderThickness="0,1,0,0"
+                        Padding="10,8">
+                    <Button x:Name="_sidebarSettingsButton"
+                            Content="⚙  Settings"
+                            Classes="subtle"
+                            HorizontalAlignment="Stretch"
+                            Height="31"
+                            FontSize="12"
+                            Click="SidebarSettingsButton_Click"/>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             COLUMN 1 — VERTICAL DIVIDER
+        ══════════════════════════════════════════════════════════════════ -->
+        <Border Grid.Column="1"
+                Background="{DynamicResource BorderColorBrush}"/>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             COLUMN 2 — MAIN CONTENT AREA
+        ══════════════════════════════════════════════════════════════════ -->
+        <Grid Grid.Column="2"
+              x:Name="_serverContentPanel"
+              Background="{DynamicResource BackgroundBrush}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>   <!-- Row 0: server header/actions -->
+                <RowDefinition Height="*"/>      <!-- Row 1: data grid -->
+                <RowDefinition Height="Auto"/>   <!-- Row 2: activity console -->
+                <RowDefinition Height="Auto"/>   <!-- Row 3: lower status bar -->
+            </Grid.RowDefinitions>
+
+            <!-- ── ROW 0: SERVER HEADER + ACTIONS ─────────────────────── -->
+            <Border Grid.Row="0"
+                    x:Name="_serverActionBar"
+                    Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderColorBrush}"
+                    BorderThickness="0,0,0,1"
+                    Padding="20,12">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+
+                    <Grid Grid.Column="0"
+                          Width="44"
+                          Height="44"
+                          Margin="0,0,14,0"
+                          VerticalAlignment="Center">
+                        <Border Background="#263241"
+                                CornerRadius="8"
+                                IsVisible="{Binding SelectedServer.HasServerIconFallback}">
+                            <TextBlock Text="{Binding SelectedServer.ServerInitials}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        </Border>
+                        <Border CornerRadius="8"
+                                ClipToBounds="True"
+                                IsVisible="{Binding SelectedServer.HasServerIconImage}">
+                            <Image Source="{Binding SelectedServer.ServerIconImage}"
+                                   Stretch="UniformToFill"/>
+                        </Border>
+                    </Grid>
+
+                    <StackPanel Grid.Column="1"
+                                Orientation="Vertical"
+                                Margin="0,0,14,0"
+                                VerticalAlignment="Center">
+                        <TextBlock Text="{Binding SelectedServerDisplayName}"
+                                   FontSize="17"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="0,6,0,0"
+                                    Spacing="6"
+                                    IsVisible="{Binding HasSelectedServer}">
+                            <Border Background="{Binding SelectedServer.PowerStatusBackground}"
+                                    BorderBrush="{Binding SelectedServer.PowerStatusForeground}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="8,2">
+                                <TextBlock Text="{Binding SelectedServer.PowerStatusText}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{Binding SelectedServer.PowerStatusForeground}"/>
+                            </Border>
+                            <Border Background="{DynamicResource SurfaceHoverBrush}"
+                                    BorderBrush="{DynamicResource BorderColorBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="8,2">
+                                <TextBlock Text="{Binding SelectedServer.MinecraftPillText}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </Border>
+                            <Border Background="{DynamicResource SurfaceHoverBrush}"
+                                    BorderBrush="{DynamicResource BorderColorBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="8,2">
+                                <TextBlock Text="{Binding SelectedServer.LoaderPillText}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </Border>
+                            <Border Background="#332816"
+                                    BorderBrush="{DynamicResource WarningBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="8,2"
+                                    IsVisible="{Binding SelectedServerHasVersionChange}">
+                                <TextBlock Text="{Binding SelectedServerTargetSubtitle}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource WarningBrush}"/>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Right">
+                        <Button x:Name="_refreshButton"
+                                Command="{Binding RefreshCommand}"
+                                MinWidth="99" Height="33" Padding="12,0"
+                                Margin="0,0,8,0"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                FontSize="13"
+                                ToolTip.Tip="Refresh">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="6"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                <Path Width="13"
+                                      Height="13"
+                                      Stretch="Uniform"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="2"
+                                      StrokeLineCap="Round"
+                                      Data="M20 11A8.1 8.1 0 0 0 4.5 8M4 4v4h4M4 13a8.1 8.1 0 0 0 15.5 3M20 20v-4h-4"/>
+                                <TextBlock Text="Refresh"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="_applyButton"
+                                IsEnabled="{Binding IsApplyEnabled}"
+                                Command="{Binding UpdateCommand}"
+                                Classes="accent"
+                                MinWidth="101" Height="33" Padding="14,0"
+                                Margin="0,0,8,0">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="6"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                <Path Width="13"
+                                      Height="13"
+                                      Stretch="Uniform"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="2"
+                                      StrokeLineCap="Round"
+                                      Data="M12 3v12M7 10l5 5 5-5M5 21h14"/>
+                                <TextBlock Text="Update All"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="_launchButton"
+                                Classes="success"
+                                Width="121" Height="33" Padding="0"
+                                Click="LaunchButton_Click">
+                            <Grid Width="121" Height="33"
+                                  ClipToBounds="True">
+                                <ProgressBar x:Name="_launchBuildProgressBar"
+                                             Minimum="0" Maximum="100" Value="0"
+                                             Height="33"
+                                             VerticalAlignment="Stretch"
+                                             Opacity="0.35"
+                                             IsVisible="False"/>
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="6"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center">
+                                    <Path x:Name="_launchBuildIcon"
+                                          Width="13"
+                                          Height="13"
+                                          Stretch="Uniform"
+                                          Stroke="White"
+                                          StrokeThickness="2"
+                                          StrokeLineCap="Round"
+                                          IsVisible="False"
+                                          Data="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.1-3.1a6 6 0 0 1-7.9 7.9l-6 6a2.1 2.1 0 0 1-3-3l6-6a6 6 0 0 1 7.9-7.9l-3.1 3.1Z"/>
+                                    <TextBlock x:Name="_launchButtonText"
+                                               Text="▶  Launch"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ── ROW 1: CONTENT DATAGRID ─────────────────────────────── -->
+            <Grid Grid.Row="1" RowDefinitions="Auto,*">
+                <Border x:Name="_serverMotdStrip"
+                        Grid.Row="0"
+                        Background="#17304A"
+                        BorderBrush="#3B82F6"
+                        BorderThickness="0,0,0,1"
+                        MinHeight="35"
+                        Padding="6,4"
+                        IsVisible="{Binding IsServerMotdVisible}"
+                        PointerEntered="ServerMotdStrip_PointerEntered"
+                        PointerExited="ServerMotdStrip_PointerExited">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Border Grid.Column="0"
+                                Background="#1E3A5F"
+                                BorderBrush="#3B82F6"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="6,1"
+                                Margin="0,0,8,0"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="MOTD"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="#BFDBFE"/>
+                        </Border>
+
+                        <TextBlock x:Name="_serverMotdTextBlock"
+                                   Grid.Column="1"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,8,0"
+                                   VerticalAlignment="Center"/>
+
+                        <Button Grid.Column="2"
+                                Classes="motd-close"
+                                ToolTip.Tip="Close MOTD"
+                                VerticalAlignment="Center"
+                                Click="ServerMotdClose_Click">
+                            <Path Width="7"
+                                  Height="7"
+                                  Stretch="Uniform"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  StrokeThickness="2"
+                                  StrokeLineCap="Round"
+                                  Data="M18 6 6 18M6 6l12 12"/>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <dg:DataGrid Grid.Row="1"
+                             x:Name="_contentGrid"
+                             Sorting="ContentGrid_Sorting"
+                             ItemsSource="{Binding ContentItems}"
+                             AutoGenerateColumns="False"
+                             IsReadOnly="True"
+                             CanUserSortColumns="True"
+                             CanUserResizeColumns="False"
+                             SelectionMode="Single"
+                             BorderThickness="0"
+                             GridLinesVisibility="None"
+                             Background="{DynamicResource BackgroundBrush}"
+                             Foreground="{DynamicResource TextPrimaryBrush}"
+                             RowBackground="Transparent"
+                             FontSize="13">
+
+                <dg:DataGrid.Styles>
+                    <Style Selector="DataGridRow">
+                        <Setter Property="Background" Value="{Binding RowBackground}"/>
+                    </Style>
+                    <!-- Column headers — grid-specific brushes from Dark.axaml -->
+                    <Style Selector="DataGridColumnHeader">
+                        <Setter Property="Background" Value="{DynamicResource GridHeaderBrush}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource GridHeaderTextBrush}"/>
+                        <Setter Property="FontSize" Value="11"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Padding" Value="12,8"/>
+                        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource BorderColorBrush}"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                    <!-- Zero out cell padding so template content can center accurately -->
+                     <Style Selector="DataGridCell">
+                         <Setter Property="Padding" Value="0"/>
+                         <Setter Property="Background" Value="Transparent"/>
+                         <Setter Property="BorderBrush" Value="Transparent"/>
+                         <Setter Property="BorderThickness" Value="0"/>
+                     </Style>
+                     <Style Selector="DataGridCell:pointerover">
+                         <Setter Property="Background" Value="Transparent"/>
+                         <Setter Property="BorderBrush" Value="Transparent"/>
+                         <Setter Property="BorderThickness" Value="0"/>
+                     </Style>
+                     <Style Selector="DataGridCell:selected">
+                         <Setter Property="Background" Value="Transparent"/>
+                         <Setter Property="BorderBrush" Value="Transparent"/>
+                         <Setter Property="BorderThickness" Value="0"/>
+                     </Style>
+                     <Style Selector="DataGridCell:selected:pointerover">
+                         <Setter Property="Background" Value="Transparent"/>
+                         <Setter Property="BorderBrush" Value="Transparent"/>
+                         <Setter Property="BorderThickness" Value="0"/>
+                     </Style>
+                     <Style Selector="DataGridCell:current">
+                         <Setter Property="Background" Value="Transparent"/>
+                         <Setter Property="BorderBrush" Value="Transparent"/>
+                         <Setter Property="BorderThickness" Value="0"/>
+                     </Style>
+                     <Style Selector="DataGridCell:focus">
+                         <Setter Property="Background" Value="Transparent"/>
+                         <Setter Property="BorderBrush" Value="Transparent"/>
+                         <Setter Property="BorderThickness" Value="0"/>
+                     </Style>
+                     <Style Selector="DataGridRow:pointerover">
+                         <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}"/>
+                     </Style>
+                     <Style Selector="DataGridRow:selected">
+                         <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}"/>
+                     </Style>
+                 </dg:DataGrid.Styles>
+
+                <dg:DataGrid.Columns>
+
+                    <!-- Name column (left-aligned) -->
+                    <dg:DataGridTemplateColumn Header="Name" Width="SizeToCells" MinWidth="160" MaxWidth="420" SortMemberPath="Name">
+                        <dg:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,*,Auto"
+                                      Margin="12,0"
+                                      VerticalAlignment="Center">
+                                    <Border Grid.Column="0"
+                                            Width="22"
+                                            Height="20"
+                                            Margin="0,0,8,0"
+                                            VerticalAlignment="Center"
+                                            ClipToBounds="True">
+                                        <Image Source="{Binding IconImage}"
+                                               Width="20"
+                                               Height="20"
+                                               Stretch="UniformToFill"
+                                               IsVisible="{Binding HasIconImage}"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Name}"
+                                               VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <Button Grid.Column="2"
+                                            Classes="content-project-link"
+                                            IsVisible="{Binding HasProjectUrl}"
+                                            Tag="{Binding ProjectUrl}"
+                                            Click="ContentProjectLinkButton_Click"
+                                            Width="23"
+                                            Height="23"
+                                            Margin="6,0,0,0"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="🔗"
+                                                   FontSize="12"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+
+                    <!-- Type column (centered) -->
+                    <dg:DataGridTemplateColumn Width="110" SortMemberPath="ContentTypeDisplay">
+                        <dg:DataGridTemplateColumn.Header>
+                            <Grid Width="110" Margin="-12,0">
+                                <TextBlock Text="Type"
+                                           HorizontalAlignment="Center"
+                                           TextAlignment="Center"/>
+                            </Grid>
+                        </dg:DataGridTemplateColumn.Header>
+                        <dg:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ContentTypeDisplay}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+
+                    <!-- Status — coloured badge (centered) -->
+                    <dg:DataGridTemplateColumn Width="120" SortMemberPath="StatusSortKey">
+                        <dg:DataGridTemplateColumn.Header>
+                            <Grid Width="120" Margin="-12,0">
+                                <TextBlock Text="Status"
+                                           HorizontalAlignment="Center"
+                                           TextAlignment="Center"/>
+                            </Grid>
+                        </dg:DataGridTemplateColumn.Header>
+                        <dg:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding StatusBadgeBackground}"
+                                        CornerRadius="4"
+                                        Padding="8,3"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        ToolTip.Tip="{Binding TargetVersionTip}">
+                                    <TextBlock Text="{Binding StatusText}"
+                                               Foreground="{Binding StatusBadgeForeground}"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"/>
+                                </Border>
+                            </DataTemplate>
+                        </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+
+                    <!-- Installed version column (left-aligned) -->
+                    <dg:DataGridTemplateColumn Header="Installed Version" Width="*" MinWidth="160" SortMemberPath="Version">
+                        <dg:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{Binding Version}"
+                                           VerticalAlignment="Center"
+                                           Margin="12,0"
+                                           TextTrimming="CharacterEllipsis"
+                                           ToolTip.Tip="{Binding TargetVersionTip}"/>
+                                <Border Grid.Column="1" IsVisible="{Binding IsLocalPackOverride}" Background="#554627" CornerRadius="4" Padding="6,2" Margin="0,0,8,0" VerticalAlignment="Center">
+                                    <TextBlock Text="Override" FontSize="11" Foreground="#F5D98B"/>
+                                </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+
+                    <dg:DataGridTemplateColumn Header="Actions" Width="110">
+                        <dg:DataGridTemplateColumn.CellTemplate><DataTemplate>
+                            <Grid>
+                                <Button Content="Review files" IsVisible="{Binding CanReviewModpack}" Click="ReviewModpackFiles_Click" Background="Transparent" HorizontalAlignment="Center"/>
+                                <Button Content="⋮" FontSize="19" Width="24" Height="26" Padding="0" Background="Transparent" BorderThickness="0"
+                                        IsVisible="{Binding HasServerMissingPackControls}" Click="ServerPackMenu_Click" ToolTip.Tip="Manual download options" HorizontalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate></dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+                </dg:DataGrid.Columns>
+                </dg:DataGrid>
+            </Grid>
+
+            <!-- ── ROW 2: ACTIVITY CONSOLE ────────────────────────────── -->
+            <Border Grid.Row="2"
+                    Background="{DynamicResource LogBackgroundBrush}"
+                    BorderBrush="{DynamicResource BorderColorBrush}"
+                    BorderThickness="0,1,0,0"
+                    Height="140"
+                    IsVisible="True">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding ConsoleLines}"
+                                  Background="Transparent"
+                                  Padding="6,4"
+                                  FontFamily="Consolas"
+                                  FontSize="12"
+                                  Foreground="{DynamicResource LogForegroundBrush}"
+                                  x:Name="_consoleListBox">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}"
+                                           Foreground="{Binding Converter={StaticResource ConsoleLineBrushConverter}}"
+                                           Padding="0"
+                                           Margin="0">
+                                    <TextBlock.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Copy Line"
+                                                      CommandParameter="{Binding}"
+                                                      Click="ConsoleCopyLine_Click"/>
+                                            <MenuItem Header="Copy All"
+                                                      Click="ConsoleCopyAll_Click"/>
+                                        </ContextMenu>
+                                    </TextBlock.ContextMenu>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <!-- ── ROW 3: LOWER STATUS BAR ────────────────────────────── -->
+            <Border Grid.Row="3"
+                    Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderColorBrush}"
+                    BorderThickness="0,1,0,0"
+                    Height="36">
+                <Grid RowDefinitions="Auto,*">
+                    <ProgressBar Grid.Row="0"
+                                 x:Name="_serverProgressBar"
+                                 Value="{Binding ActivityBarProgress, Mode=OneWay}"
+                                 IsIndeterminate="{Binding IsActivityBarIndeterminate}"
+                                 Height="3"
+                                 BorderThickness="0"
+                                 IsVisible="{Binding IsActivityBarVisible}"/>
+                    <Grid Grid.Row="1"
+                          ColumnDefinitions="*,Auto"
+                          VerticalAlignment="Stretch"
+                          Margin="12,0">
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding StatusText}"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextMutedBrush}"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    Spacing="16"
+                                    IsVisible="{Binding IsIdleStatusSummaryVisible}">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="Failed"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMutedBrush}"/>
+                                <TextBlock Text="{Binding FailedActions}"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="{Binding FailedActionsForeground}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="Pending"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMutedBrush}"/>
+                                <TextBlock Text="{Binding PendingActions}"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="{Binding PendingActionsForeground}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="Total"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMutedBrush}"/>
+                                <TextBlock Text="{Binding TotalItems}"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+
+        </Grid>
+        <!-- end main content area (server view) -->
+
+        <!-- ══════════════════════════════════════════════════════════════
+             COLUMN 2 — LOCAL INSTANCE OVERLAY (hidden when a server is selected)
+        ══════════════════════════════════════════════════════════════════ -->
+        <Grid Grid.Column="2"
+              x:Name="_localInstancePanel"
+              IsVisible="False"
+              Background="{DynamicResource BackgroundBrush}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>   <!-- Row 0: local header/actions -->
+                <RowDefinition Height="*"/>      <!-- Row 1: data grid -->
+                <RowDefinition Height="Auto"/>   <!-- Row 2: activity console -->
+                <RowDefinition Height="Auto"/>   <!-- Row 3: lower status bar -->
+            </Grid.RowDefinitions>
+
+            <!-- ── ROW 0: LOCAL HEADER + ACTIONS ──────────────────────── -->
+            <Border Grid.Row="0"
+                    x:Name="_localActionBar"
+                    Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderColorBrush}"
+                    BorderThickness="0,0,0,1"
+                    Padding="20,12">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Grid x:Name="_localInstanceIconPanel" Grid.Column="0"
+                          Width="44"
+                          Height="44"
+                          Margin="0,0,14,0"
+                          VerticalAlignment="Center">
+                        <Border Background="#263241"
+                                CornerRadius="8" IsVisible="{Binding HasInstanceIconFallback}">
+                            <TextBlock x:Name="_localInstanceInitials"
+                                       Text="LOC"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        </Border>
+                        <Border CornerRadius="8" ClipToBounds="True" IsVisible="{Binding HasInstanceIcon}">
+                            <Image Source="{Binding InstanceIconImage}" Stretch="UniformToFill"/>
+                        </Border>
+                    </Grid>
+
+                    <StackPanel Grid.Column="1"
+                                Orientation="Vertical"
+                                Margin="0,0,14,0"
+                                VerticalAlignment="Center">
+                        <TextBlock x:Name="_localInstanceName"
+                                   Text=""
+                                   FontSize="17"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="0,6,0,0"
+                                    Spacing="6">
+                            <Border Background="{DynamicResource SurfaceHoverBrush}"
+                                    BorderBrush="{DynamicResource BorderColorBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="8,2">
+                                <TextBlock Text="Local"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </Border>
+                            <Border Background="{DynamicResource SurfaceHoverBrush}"
+                                    BorderBrush="{DynamicResource BorderColorBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="8,2">
+                                <TextBlock x:Name="_localMinecraftPill"
+                                           Text="MC Unknown"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </Border>
+                            <Border Background="{DynamicResource SurfaceHoverBrush}"
+                                    BorderBrush="{DynamicResource BorderColorBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="8,2">
+                                <TextBlock x:Name="_localLoaderPill"
+                                           Text="Vanilla"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Right">
+                        <Button x:Name="_localRefreshButton"
+                                MinWidth="99" Height="33" Padding="12,0"
+                                Margin="0,0,8,0"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                FontSize="13"
+                                ToolTip.Tip="Refresh"
+                                Click="LocalRefreshButton_Click">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="6"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                <Path Width="13"
+                                      Height="13"
+                                      Stretch="Uniform"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="2"
+                                      StrokeLineCap="Round"
+                                      Data="M20 11A8.1 8.1 0 0 0 4.5 8M4 4v4h4M4 13a8.1 8.1 0 0 0 15.5 3M20 20v-4h-4"/>
+                                <TextBlock Text="Refresh"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="_localAddContentButton"
+                                MinWidth="119" Height="33" Padding="12,0"
+                                Margin="0,0,8,0"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                FontSize="13"
+                                ToolTip.Tip="Add content"
+                                Click="AddContentButton_Click">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="6"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                <Path Width="13"
+                                      Height="13"
+                                      Stretch="Uniform"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="2"
+                                      StrokeLineCap="Round"
+                                      Data="M12 5v14M5 12h14"/>
+                                <TextBlock Text="Add Content"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="_localUpdateButton"
+                                Classes="accent"
+                                MinWidth="101" Height="33" Padding="14,0"
+                                Margin="0,0,8,0"
+                                IsEnabled="False"
+                                Click="LocalUpdateButton_Click">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="6"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                <Path Width="13"
+                                      Height="13"
+                                      Stretch="Uniform"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="2"
+                                      StrokeLineCap="Round"
+                                      Data="M12 3v12M7 10l5 5 5-5M5 21h14"/>
+                                <TextBlock Text="Update All"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="_localLaunchButton"
+                                Classes="success"
+                                Width="121" Height="33" Padding="0"
+                                IsEnabled="False"
+                                Click="LocalLaunchButton_Click">
+                            <Grid Width="121" Height="33"
+                                  ClipToBounds="True">
+                                <ProgressBar x:Name="_localLaunchBuildProgressBar"
+                                             Minimum="0" Maximum="100" Value="0"
+                                             Height="33"
+                                             VerticalAlignment="Stretch"
+                                             Opacity="0.35"
+                                             IsVisible="False"/>
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="6"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center">
+                                    <Path x:Name="_localLaunchBuildIcon"
+                                          Width="13"
+                                          Height="13"
+                                          Stretch="Uniform"
+                                          Stroke="White"
+                                          StrokeThickness="2"
+                                          StrokeLineCap="Round"
+                                          IsVisible="False"
+                                          Data="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.1-3.1a6 6 0 0 1-7.9 7.9l-6 6a2.1 2.1 0 0 1-3-3l6-6a6 6 0 0 1 7.9-7.9l-3.1 3.1Z"/>
+                                    <TextBlock x:Name="_localLaunchButtonText"
+                                               Text="▶  Launch"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ── ROW 1: CONTENT DATAGRID (matches server grid) ──────── -->
+            <dg:DataGrid Grid.Row="1"
+                         x:Name="_localAddonGrid"
+                         Sorting="LocalContentGrid_Sorting"
+                         AutoGenerateColumns="False"
+                         IsReadOnly="True"
+                         CanUserSortColumns="True"
+                         CanUserResizeColumns="False"
+                         SelectionMode="Single"
+                         BorderThickness="0"
+                         GridLinesVisibility="None"
+                         Background="{DynamicResource BackgroundBrush}"
+                         Foreground="{DynamicResource TextPrimaryBrush}"
+                         RowBackground="Transparent"
+                         FontSize="13">
+
+                <dg:DataGrid.Styles>
+                    <Style Selector="DataGridRow"><Setter Property="Background" Value="{Binding RowBackground}"/></Style>
+                    <Style Selector="DataGridColumnHeader">
+                        <Setter Property="Background" Value="{DynamicResource GridHeaderBrush}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource GridHeaderTextBrush}"/>
+                        <Setter Property="FontSize" Value="11"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Padding" Value="12,8"/>
+                        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource BorderColorBrush}"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                     <Style Selector="DataGridCell">
+                         <Setter Property="Padding" Value="0"/>
+                         <Setter Property="Background" Value="Transparent"/>
+                         <Setter Property="BorderBrush" Value="Transparent"/>
+                         <Setter Property="BorderThickness" Value="0"/>
+                     </Style>
+                     <Style Selector="DataGridCell:pointerover">
+                         <Setter Property="Background" Value="Transparent"/>
+                         <Setter Property="BorderBrush" Value="Transparent"/>
+                         <Setter Property="BorderThickness" Value="0"/>
+                     </Style>
+                     <Style Selector="DataGridCell:selected">
+                         <Setter Property="Background" Value="Transparent"/>
+                         <Setter Property="BorderBrush" Value="Transparent"/>
+                         <Setter Property="BorderThickness" Value="0"/>
+                     </Style>
+                     <Style Selector="DataGridCell:selected:pointerover">
+                         <Setter Property="Background" Value="Transparent"/>
+                         <Setter Property="BorderBrush" Value="Transparent"/>
+                         <Setter Property="BorderThickness" Value="0"/>
+                     </Style>
+                     <Style Selector="DataGridCell:current">
+                         <Setter Property="Background" Value="Transparent"/>
+                         <Setter Property="BorderBrush" Value="Transparent"/>
+                         <Setter Property="BorderThickness" Value="0"/>
+                     </Style>
+                     <Style Selector="DataGridCell:focus">
+                         <Setter Property="Background" Value="Transparent"/>
+                         <Setter Property="BorderBrush" Value="Transparent"/>
+                         <Setter Property="BorderThickness" Value="0"/>
+                     </Style>
+                     <Style Selector="DataGridRow:pointerover">
+                         <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}"/>
+                     </Style>
+                     <Style Selector="DataGridRow:selected">
+                         <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}"/>
+                     </Style>
+                 </dg:DataGrid.Styles>
+
+                <dg:DataGrid.Columns>
+                    <!-- Name column (left-aligned) -->
+                    <dg:DataGridTemplateColumn Header="Name" Width="SizeToCells" MinWidth="160" MaxWidth="420" SortMemberPath="Name">
+                        <dg:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,*,Auto"
+                                      Margin="12,0"
+                                      VerticalAlignment="Center">
+                                    <Border Grid.Column="0"
+                                            Width="22"
+                                            Height="20"
+                                            Margin="0,0,8,0"
+                                            VerticalAlignment="Center"
+                                            ClipToBounds="True">
+                                        <Image Source="{Binding IconImage}"
+                                               Width="20"
+                                               Height="20"
+                                               Stretch="UniformToFill"
+                                               IsVisible="{Binding HasIconImage}"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Name}"
+                                               VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <Button Grid.Column="2"
+                                            Classes="content-project-link"
+                                            IsVisible="{Binding HasProjectUrl}"
+                                            Tag="{Binding ProjectUrl}"
+                                            Click="ContentProjectLinkButton_Click"
+                                            Width="23"
+                                            Height="23"
+                                            Margin="6,0,0,0"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="🔗"
+                                                   FontSize="12"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+
+                    <!-- Type column (centered) -->
+                    <dg:DataGridTemplateColumn Width="110" SortMemberPath="ContentTypeDisplay">
+                        <dg:DataGridTemplateColumn.Header>
+                            <Grid Width="110" Margin="-12,0">
+                                <TextBlock Text="Type"
+                                           HorizontalAlignment="Center"
+                                           TextAlignment="Center"/>
+                            </Grid>
+                        </dg:DataGridTemplateColumn.Header>
+                        <dg:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ContentTypeDisplay}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+
+                    <!-- Status — coloured badge (centered) -->
+                    <dg:DataGridTemplateColumn Width="120" SortMemberPath="StatusSortKey">
+                        <dg:DataGridTemplateColumn.Header>
+                            <Grid Width="120" Margin="-12,0">
+                                <TextBlock Text="Status"
+                                           HorizontalAlignment="Center"
+                                           TextAlignment="Center"/>
+                            </Grid>
+                        </dg:DataGridTemplateColumn.Header>
+                        <dg:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding StatusBadgeBackground}"
+                                        CornerRadius="4"
+                                        Padding="8,3"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        ToolTip.Tip="{Binding TargetVersionTip}">
+                                    <TextBlock Text="{Binding StatusText}"
+                                               Foreground="{Binding StatusBadgeForeground}"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"/>
+                                </Border>
+                            </DataTemplate>
+                        </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+
+                    <!-- Installed version column (left-aligned) -->
+                    <dg:DataGridTemplateColumn Header="Installed Version" Width="*" MinWidth="160" SortMemberPath="Version">
+                        <dg:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Version}"
+                                           VerticalAlignment="Center"
+                                           Margin="12,0"
+                                           TextTrimming="CharacterEllipsis"
+                                           ToolTip.Tip="{Binding TargetVersionTip}"/>
+                            </DataTemplate>
+                        </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+
+                    <!-- Action column: per-item update + delete buttons -->
+                    <dg:DataGridTemplateColumn Width="101">
+                        <dg:DataGridTemplateColumn.Header>
+                            <TextBlock Text="Action" HorizontalAlignment="Center"/>
+                        </dg:DataGridTemplateColumn.Header>
+                        <dg:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Width="51"
+                                      ColumnDefinitions="21,9,21"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center">
+                                    <!-- Update button (visible only when update available) -->
+                                    <Button Grid.Column="0"
+                                            Classes="localUpdateSingleBtn"
+                                            Click="LocalUpdateSingleButton_Click"
+                                            IsVisible="{Binding HasUpdate}"
+                                            ToolTip.Tip="{Binding TargetVersionTip}"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="0"
+                                            Width="21" Height="21"
+                                            HorizontalAlignment="Center"
+                                            Cursor="Hand">
+                                        <Path Width="7"
+                                              Height="7"
+                                              Stretch="Uniform"
+                                              Stroke="#10B981"
+                                              StrokeThickness="2"
+                                              StrokeLineCap="Round"
+                                              Data="M12 3v12M7 10l5 5 5-5M5 21h14"/>
+                                    </Button>
+                                    <!-- Delete button (always visible for tracked items) -->
+                                    <Button Grid.Column="2"
+                                            Classes="localDeleteBtn"
+                                            Click="LocalDeleteContentButton_Click"
+                                            IsVisible="{Binding CanDeleteLocalItem}"
+                                            ToolTip.Tip="Remove from instance"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="0"
+                                            Width="21" Height="21"
+                                            HorizontalAlignment="Center"
+                                            Cursor="Hand">
+                                        <Path Width="7"
+                                              Height="7"
+                                              Stretch="Uniform"
+                                              Stroke="#EF4444"
+                                              StrokeThickness="2.2"
+                                              StrokeLineCap="Round"
+                                              Data="M6 6l12 12M18 6 6 18"/>
+                                    </Button>
+                                    <Button Grid.Column="2" Content="⋮" FontSize="19" Width="24" Height="26" Padding="0" Background="Transparent" BorderThickness="0"
+                                            IsVisible="{Binding HasLocalPackControls}" Click="LocalPackMenu_Click" ToolTip.Tip="Modpack options"/>
+                                </Grid>
+                            </DataTemplate>
+                        </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+                </dg:DataGrid.Columns>
+            </dg:DataGrid>
+
+            <!-- ── ROW 2: ACTIVITY CONSOLE ────────────────────────────── -->
+            <Border Grid.Row="2"
+                    Background="{DynamicResource LogBackgroundBrush}"
+                    BorderBrush="{DynamicResource BorderColorBrush}"
+                    BorderThickness="0,1,0,0"
+                    Height="140"
+                    IsVisible="True">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding ConsoleLines}"
+                                  Background="Transparent"
+                                  Padding="6,4"
+                                  FontFamily="Consolas"
+                                  FontSize="12"
+                                  Foreground="{DynamicResource LogForegroundBrush}"
+                                  x:Name="_localConsoleListBox">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}"
+                                           Foreground="{Binding Converter={StaticResource ConsoleLineBrushConverter}}"
+                                           Padding="0"
+                                           Margin="0">
+                                    <TextBlock.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Copy Line"
+                                                      CommandParameter="{Binding}"
+                                                      Click="ConsoleCopyLine_Click"/>
+                                            <MenuItem Header="Copy All"
+                                                      Click="ConsoleCopyAll_Click"/>
+                                        </ContextMenu>
+                                    </TextBlock.ContextMenu>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <!-- ── ROW 3: LOWER STATUS BAR ────────────────────────────── -->
+            <Border Grid.Row="3"
+                    Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderColorBrush}"
+                    BorderThickness="0,1,0,0"
+                    Height="36">
+                <Grid RowDefinitions="Auto,*">
+                    <ProgressBar Grid.Row="0"
+                                 x:Name="_localProgressBar"
+                                 Height="3"
+                                 BorderThickness="0"
+                                 IsVisible="False"/>
+                    <Grid Grid.Row="1"
+                          ColumnDefinitions="*,Auto"
+                          VerticalAlignment="Stretch"
+                          Margin="12,0">
+                        <TextBlock Grid.Column="0"
+                                   x:Name="_localStatusText"
+                                   Text="Select Refresh to load"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextMutedBrush}"
+                                   VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <StackPanel Grid.Column="1"
+                                    x:Name="_localIdleCountsPanel"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    Spacing="16"
+                                    IsVisible="True">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="Failed"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMutedBrush}"/>
+                                <TextBlock x:Name="_localFailedActions"
+                                           Text="0"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="#10B981"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="Pending"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMutedBrush}"/>
+                                <TextBlock x:Name="_localPendingActions"
+                                           Text="0"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="#10B981"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="Total"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMutedBrush}"/>
+                                <TextBlock x:Name="_localTotalItems"
+                                           Text="0"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+    </Grid>
+</Window>

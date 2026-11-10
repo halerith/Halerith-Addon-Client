@@ -1,0 +1,87 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0-windows;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- AVLN3001: Avalonia XAML "no public ctor" (parameterised ctors by design)
+         IL2026/IL2104: ILLinker trim analysis — safe with TrimMode=partial
+         CS8622: Nullable sender mismatch on Avalonia event delegates -->
+    <NoWarn>AVLN3001;IL2026;IL2104;CS8622</NoWarn>
+
+    <Version>3.0.1</Version>
+    <AssemblyVersion>3.0.1.0</AssemblyVersion>
+    <FileVersion>3.0.1.0</FileVersion>
+    <Copyright>© 2026 Halerith. All rights reserved.</Copyright>
+    <Company>Halerith</Company>
+    <InformationalVersion>$(Version)</InformationalVersion>
+    <Product>Halerith Addon Client</Product>
+    <Authors>Halerith</Authors>
+    <Description>Build, sync and launch your Minecraft: Java Edition instances.</Description>
+    <ApplicationIcon Condition="'$(TargetFramework)' == 'net10.0-windows'">..\HalerithAddonClient.Core\Assets\HalerithAddonClient.ico</ApplicationIcon>
+    <ApplicationManifest Condition="'$(TargetFramework)' == 'net10.0-windows'">app.manifest</ApplicationManifest>
+
+    <!-- Set this project-file switch to true to enable extra diagnostic behavior.
+         Currently dumps every fetched server manifest to:
+         %LOCALAPPDATA%\Halerith Addon Client\Logs\manifest-*.json
+         Keep false for normal builds. -->
+    <DebugBuild>false</DebugBuild>
+    <!-- Presentation-only recording/demo build. Never changes real credentials. -->
+    <HALERITH_DEMO_MODE>false</HALERITH_DEMO_MODE>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(HALERITH_DEMO_MODE)' == 'true'">
+    <DefineConstants>$(DefineConstants);HALERITH_DEMO_MODE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-windows'">
+    <OutputType>WinExe</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' != 'net10.0-windows'">
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <!-- Inject debug-only compile constants when the project-file switch is true -->
+  <PropertyGroup Condition="'$(DebugBuild)' == 'true'">
+    <DefineConstants>$(DefineConstants);HALERITH_DEBUG_BUILD;MANIFEST_DEBUG_DUMP</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>true</Optimize>
+    <AssemblyName>HalerithAddonClient</AssemblyName>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+  </PropertyGroup>
+
+  <!-- PublishAot support (commented out for now) -->
+  <!--
+  <PropertyGroup>
+    <PublishAot>true</PublishAot>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>link</TrimMode>
+  </PropertyGroup>
+  -->
+
+  <ItemGroup>
+    <ProjectReference
+      Include="..\HalerithAddonClient.Core\HalerithAddonClient.Core.csproj"
+      AdditionalProperties="DebugBuild=$(DebugBuild)" />
+    <EmbeddedResource Include="..\HalerithAddonClient.Core\Assets\HalerithAddonClient.ico" />
+    <EmbeddedResource Include="..\HalerithAddonClient.Core\Assets\HalerithAddonClient.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.13" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.18" />
+  </ItemGroup>
+</Project>

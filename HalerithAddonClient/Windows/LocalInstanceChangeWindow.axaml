@@ -1,0 +1,115 @@
+<Window x:Class="HalerithAddonClient.Windows.LocalInstanceChangeWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Change Local Instance"
+        Width="560"
+        SizeToContent="Height"
+        MinWidth="520"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        SystemDecorations="BorderOnly"
+        ShowInTaskbar="False"
+        Background="{DynamicResource BackgroundBrush}">
+
+    <Grid RowDefinitions="Auto,Auto,Auto" Margin="24,20">
+
+        <StackPanel Grid.Row="0" Spacing="6" Margin="0,0,0,18">
+            <TextBlock Text="Change Local Instance"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+            <TextBlock x:Name="_currentRuntimeText"
+                       FontSize="12"
+                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Spacing="14">
+            <StackPanel>
+                <TextBlock Text="Minecraft Version"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           Margin="0,0,0,4"/>
+                <ComboBox x:Name="_mcVersionComboBox"
+                          HorizontalAlignment="Stretch"
+                          PlaceholderText="Loading versions..."
+                          SelectionChanged="McVersionComboBox_SelectionChanged"/>
+            </StackPanel>
+
+            <StackPanel>
+                <TextBlock Text="Mod Loader"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           Margin="0,0,0,4"/>
+                <ComboBox x:Name="_loaderComboBox"
+                          HorizontalAlignment="Stretch"
+                          SelectionChanged="LoaderComboBox_SelectionChanged">
+                    <ComboBoxItem Content="Vanilla" Tag=""/>
+                    <ComboBoxItem Content="Fabric" Tag="fabric"/>
+                    <ComboBoxItem Content="Forge" Tag="forge"/>
+                    <ComboBoxItem Content="NeoForge" Tag="neoforge"/>
+                    <ComboBoxItem Content="Quilt" Tag="quilt"/>
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel x:Name="_loaderVersionPanel" IsVisible="False">
+                <TextBlock Text="Loader Version"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           Margin="0,0,0,4"/>
+                <ComboBox x:Name="_loaderVersionComboBox"
+                          HorizontalAlignment="Stretch"
+                          PlaceholderText="Select a Minecraft version first"
+                          SelectionChanged="LoaderVersionComboBox_SelectionChanged"/>
+            </StackPanel>
+
+            <Border Background="{DynamicResource BackgroundAlt2Brush}"
+                    BorderBrush="{DynamicResource SeparatorBrush}"
+                    BorderThickness="1"
+                    Padding="10">
+                <StackPanel Spacing="5">
+                    <TextBlock x:Name="_targetRuntimeText"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="The existing local instance folder is kept. Content may need updating after changing versions."
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextMutedBrush}"/>
+                </StackPanel>
+            </Border>
+
+            <Grid>
+                <ProgressBar x:Name="_buildProgressBar"
+                             Height="24"
+                             Minimum="0"
+                             Maximum="100"
+                             Value="0"
+                             IsVisible="False"
+                             Background="{DynamicResource BackgroundAlt2Brush}"
+                             Foreground="{DynamicResource AccentBrush}"/>
+                <TextBlock x:Name="_statusText"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextMutedBrush}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="0,20,0,0">
+            <Button Content="Cancel"
+                    Classes="subtle"
+                    MinWidth="91"
+                    Height="37"
+                    FontSize="13"
+                    Click="CancelButton_Click"/>
+            <Button x:Name="_applyButton"
+                    Content="Build &amp; Apply"
+                    Classes="success"
+                    MinWidth="121"
+                    Height="37"
+                    FontSize="13"
+                    IsEnabled="False"
+                    Click="ApplyButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

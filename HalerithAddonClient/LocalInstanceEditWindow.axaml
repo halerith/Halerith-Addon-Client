@@ -1,0 +1,200 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="HalerithAddonClient.LocalInstanceEditWindow"
+        Title="Edit Local Instance"
+        Width="680" Height="560"
+        MinWidth="600" MinHeight="480"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        Background="{DynamicResource BackgroundBrush}">
+
+    <Grid RowDefinitions="*,Auto">
+        <TabControl Grid.Row="0"
+                    x:Name="_tabControl"
+                    Background="{DynamicResource BackgroundBrush}">
+
+            <!-- Settings first: local instances do not have host/connection state. -->
+            <TabItem Header="Settings">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+                    <StackPanel Orientation="Vertical">
+
+                        <TextBlock Text="Server Address"
+                                   FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextBrush}"
+                                   Margin="0,2,0,4"/>
+                        <TextBlock Text="Optional - the server address players connect to, for example play.example.com."
+                                   Foreground="{DynamicResource TextMutedBrush}"
+                                   FontSize="12" TextWrapping="Wrap"
+                                   Margin="0,0,0,8"/>
+                        <TextBox x:Name="_serverAddressBox"
+                                 HorizontalAlignment="Left" Width="400"
+                                 Watermark="play.example.com"
+                                 ToolTip.Tip="Server address players connect to (optional)"/>
+
+                        <Separator Margin="0,16,0,16" Background="{DynamicResource BorderColorBrush}"/>
+
+                        <TextBlock Text="Java Launch Settings"
+                                   FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextBrush}"
+                                   Margin="0,2,0,4"/>
+                        <TextBlock Text="Configure how the JVM is started when launching this instance."
+                                   Foreground="{DynamicResource TextMutedBrush}"
+                                   FontSize="12" TextWrapping="Wrap"
+                                   Margin="0,0,0,14"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16" Spacing="20">
+                            <RadioButton x:Name="_javaModeAuto"
+                                         Content="Default" GroupName="JavaMode"
+                                         IsChecked="True"
+                                         Click="JavaModeRadio_Click"/>
+                            <RadioButton x:Name="_javaModeManual"
+                                         Content="Manual" GroupName="JavaMode"
+                                         Click="JavaModeRadio_Click"/>
+                            <RadioButton x:Name="_javaModeCustom"
+                                         Content="Custom" GroupName="JavaMode"
+                                         Click="JavaModeRadio_Click"/>
+                        </StackPanel>
+
+                        <StackPanel x:Name="_javaAutoPanel" IsVisible="True">
+                            <TextBlock Text="Default uses 4 GB maximum memory with G1GC."
+                                       Foreground="{DynamicResource TextMutedBrush}"
+                                       FontSize="13" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <StackPanel x:Name="_javaManualPanel" IsVisible="False" Spacing="10">
+                            <TextBlock Text="Garbage Collection" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="_javaGarbageCollectorComboBox"
+                                      Width="180"
+                                      HorizontalAlignment="Left"
+                                      ToolTip.Tip="Select the garbage collector used for Manual mode">
+                                <ComboBoxItem Content="ZGC"/>
+                                <ComboBoxItem Content="ShenandoahGC"/>
+                                <ComboBoxItem Content="G1GC"/>
+                            </ComboBox>
+
+                            <TextBlock Text="Maximum Memory (Xmx)" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0"/>
+                            <Grid ColumnDefinitions="360,Auto">
+                                <Slider x:Name="_javaMaxMemorySlider"
+                                        Minimum="2"
+                                        Maximum="16"
+                                        Value="4"
+                                        TickFrequency="1"
+                                        IsSnapToTickEnabled="True"
+                                        Margin="0,0,12,0"
+                                        ValueChanged="JavaMaxMemorySlider_ValueChanged"
+                                        ToolTip.Tip="Maximum heap size in GB (-Xmx)"/>
+                                <TextBlock Grid.Column="1"
+                                           x:Name="_javaMaxMemoryValueLabel"
+                                           Text="4 GB"
+                                           Foreground="{DynamicResource TextBrush}"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel x:Name="_javaCustomPanel" IsVisible="False" Spacing="8">
+                            <TextBlock Text="Enter JVM arguments to use before the Minecraft main class. The java path, classpath, natives path, and main class are added automatically."
+                                       Foreground="{DynamicResource TextMutedBrush}"
+                                       FontSize="12" TextWrapping="Wrap"
+                                       MaxWidth="560"
+                                       HorizontalAlignment="Left"
+                                       Margin="0,0,0,4"/>
+                            <TextBox x:Name="_javaCustomArgsBox"
+                                     HorizontalAlignment="Stretch"
+                                     Height="80"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     Watermark="-Xmx4G -XX:+UseZGC -XX:+UnlockExperimentalVMOptions"
+                                     ToolTip.Tip="Complete JVM arguments without java.exe, classpath, natives path, or main class"/>
+                        </StackPanel>
+                        <Button x:Name="_deleteInstanceButton" Content="Delete Instance" Classes="danger" HorizontalAlignment="Left" Margin="0,20,0,0" Click="DeleteInstance_Click"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Build">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="Build: " FontSize="13"
+                                       Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="_instanceInfoLabel" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextBrush}" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <Border Background="{DynamicResource SurfaceBrush}"
+                                BorderBrush="{DynamicResource BorderColorBrush}"
+                                BorderThickness="1" Padding="8" Margin="0,0,0,8"
+                                MaxHeight="260">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ItemsControl x:Name="_readinessItemsControl">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                                <TextBlock Text="{Binding StatusIcon}" Width="20" FontSize="13"
+                                                           VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Label}" FontSize="12"
+                                                           Foreground="{DynamicResource TextBrush}"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <Button x:Name="_buildEnvButton" Content="Build"
+                                    MinWidth="101" Height="33"
+                                    Click="BuildEnvironment_Click"
+                                    ToolTip.Tip="Download and build the game environment for this instance"/>
+                            <Button x:Name="_openInstanceFolderButton"
+                                    Content="Open Folder"
+                                    MinWidth="111"
+                                    Height="33"
+                                    Margin="8,0,0,0"
+                                    Click="OpenInstanceFolder_Click"
+                                    ToolTip.Tip="Open this local Minecraft instance folder"/>
+
+                            <Grid Margin="12,0,0,0" VerticalAlignment="Center" MinWidth="260">
+                                <ProgressBar x:Name="_buildProgressBar"
+                                             Height="24" Minimum="0" Maximum="100" Value="0"
+                                             IsVisible="False"
+                                             Background="{DynamicResource SurfaceBrush}"
+                                             Foreground="{DynamicResource AccentBrush}"/>
+                                <TextBlock x:Name="_buildStatusLabel" Text=""
+                                           Foreground="{DynamicResource TextMutedBrush}"
+                                           FontSize="13" VerticalAlignment="Center"
+                                           HorizontalAlignment="Left"/>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <Border Grid.Row="1"
+                Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderColorBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="12,10">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <Button x:Name="_saveButton" Content="Save"
+                            Classes="accent"
+                            MinWidth="101" Height="33" Padding="14,0"
+                            Click="SaveButton_Click"/>
+                    <Button Content="Cancel"
+                            MinWidth="101" Height="33" Padding="14,0" Margin="8,0,0,0"
+                            Click="CancelButton_Click"/>
+                </StackPanel>
+
+                <TextBlock x:Name="_footerStatusLabel"
+                           Text="" FontSize="12"
+                           Foreground="{DynamicResource TextMutedBrush}"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"/>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

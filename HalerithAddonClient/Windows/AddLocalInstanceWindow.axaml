@@ -1,0 +1,158 @@
+<Window x:Class="HalerithAddonClient.Windows.AddLocalInstanceWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Add Local Instance"
+        Width="1060" Height="720"
+        MinWidth="800" MinHeight="560"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        SystemDecorations="Full"
+        ShowInTaskbar="False"
+        Background="{DynamicResource BackgroundBrush}">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="24,20">
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0"
+                   x:Name="_heading"
+                   Text="New Local Instance"
+                   FontSize="16"
+                   FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextPrimaryBrush}"
+                   Margin="0,0,0,20"/>
+
+        <!-- Form fields -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,24,*" x:Name="_formPanel">
+          <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" x:Name="_selectionPanel">
+            <ComboBox x:Name="_mode" HorizontalAlignment="Stretch" SelectedIndex="0" SelectionChanged="ModeChanged">
+              <ComboBoxItem Content="Blank instance"/><ComboBoxItem Content="Find a modpack"/><ComboBoxItem Content="Import a pack"/>
+            </ComboBox>
+            <StackPanel Grid.Row="1" x:Name="_searchPanel" Spacing="8" Margin="0,12,0,12" IsVisible="False">
+              <ComboBox x:Name="_source" SelectedIndex="0" HorizontalAlignment="Stretch">
+                <ComboBoxItem x:Name="_bothPackSourcesOption" Content="Both providers"/><ComboBoxItem Content="Modrinth"/><ComboBoxItem x:Name="_curseForgePackSourceOption" Content="CurseForge"/>
+              </ComboBox>
+              <Grid ColumnDefinitions="*,Auto"><TextBox x:Name="_query" Watermark="Search Minecraft modpacks"/><Button Grid.Column="1" Content="Search" Margin="8,0,0,0" Click="SearchClicked"/></Grid>
+            </StackPanel>
+            <Button Grid.Row="2" x:Name="_importButton" Content="Choose .mrpack or CurseForge ZIP" IsVisible="False" Margin="0,12" Click="ImportClicked"/>
+            <ListBox Grid.Row="3" x:Name="_results" SelectionChanged="PackSelected" IsVisible="False">
+              <ListBox.Styles><Style Selector="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/></Style></ListBox.Styles>
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <Grid Margin="8" ColumnDefinitions="48,12,*,Auto">
+                    <Border Width="48" Height="48" CornerRadius="6" Background="#29303C" ClipToBounds="True" VerticalAlignment="Top">
+                      <Grid>
+                        <TextBlock Text="▧" Opacity="0.4" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Image Classes="pack-search-icon" Stretch="UniformToFill" DataContextChanged="PackIconDataContextChanged"/>
+                      </Grid>
+                    </Border>
+                    <StackPanel Grid.Column="2" Spacing="5">
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                      <TextBlock Text="{Binding ProviderByline}" ToolTip.Tip="{Binding ProviderByline}" TextTrimming="CharacterEllipsis" FontSize="11" Opacity="0.7"/>
+                      <TextBlock Text="{Binding Description}" TextWrapping="Wrap" MaxHeight="50" FontSize="12"/>
+                    </StackPanel>
+                    <Button Grid.Column="3" Classes="subtle pack-project-link" Content="↗" Width="28" Height="28" Padding="0" Margin="6,0,0,0" VerticalAlignment="Top"
+                            Tag="{Binding SourceUrl}" ToolTip.Tip="Open pack website" AutomationProperties.Name="Open pack website" Click="PackWebsiteClicked"/>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <TextBlock Grid.Row="4" x:Name="_packStatus" Margin="0,12,0,0" TextWrapping="Wrap" Text="Start fresh, or choose a modpack to install its exact Minecraft and loader versions. Local modpack management requires a paid Client license."/>
+          </Grid>
+          <ScrollViewer Grid.Column="2" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="14">
+
+            <StackPanel x:Name="_packDetails" IsVisible="False" Spacing="10">
+              <TextBlock Text="Pack release"/>
+              <ComboBox x:Name="_packRelease" HorizontalAlignment="Stretch" SelectionChanged="ReleaseSelected">
+                <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding DisplayLabel}" TextTrimming="CharacterEllipsis"/></DataTemplate></ComboBox.ItemTemplate>
+              </ComboBox>
+              <TextBlock x:Name="_packRuntime" TextWrapping="Wrap"/>
+              <TextBlock Text="Bundled file updates"/>
+              <ComboBox x:Name="_filePolicy" HorizontalAlignment="Stretch"/>
+              <TextBlock Text="Optional content (unchecked items will not be installed)" TextWrapping="Wrap"/>
+              <ItemsControl x:Name="_optionalFiles"><ItemsControl.ItemTemplate><DataTemplate><CheckBox IsChecked="{Binding Enabled, Mode=TwoWay}" Content="{Binding Project.Name}"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+            </StackPanel>
+
+            <!-- Instance name -->
+            <StackPanel>
+                <TextBlock Text="Name"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           Margin="0,0,0,4"/>
+                <TextBox x:Name="_nameTextBox"
+                         Watermark="e.g. Survival 1.21"
+                         HorizontalAlignment="Stretch"/>
+            </StackPanel>
+
+            <!-- Minecraft version -->
+            <StackPanel x:Name="_blankRuntime">
+                <TextBlock Text="Minecraft Version"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           Margin="0,0,0,4"/>
+                <ComboBox x:Name="_mcVersionComboBox"
+                          HorizontalAlignment="Stretch"
+                          PlaceholderText="Loading versions…"
+                          SelectionChanged="McVersionComboBox_SelectionChanged"/>
+            <!-- Loader type -->
+            <StackPanel>
+                <TextBlock Text="Mod Loader"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           Margin="0,0,0,4"/>
+                <ComboBox x:Name="_loaderComboBox"
+                          HorizontalAlignment="Stretch"
+                          SelectionChanged="LoaderComboBox_SelectionChanged">
+                    <ComboBoxItem Content="Vanilla" Tag=""/>
+                    <ComboBoxItem Content="Fabric"  Tag="fabric"/>
+                    <ComboBoxItem Content="Forge"   Tag="forge"/>
+                    <ComboBoxItem Content="NeoForge" Tag="neoforge"/>
+                    <ComboBoxItem Content="Quilt"   Tag="quilt"/>
+                </ComboBox>
+            </StackPanel>
+
+            <!-- Loader version (hidden for Vanilla) -->
+            <StackPanel x:Name="_loaderVersionPanel" IsVisible="False">
+                <TextBlock Text="Loader Version"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           Margin="0,0,0,4"/>
+                <ComboBox x:Name="_loaderVersionComboBox"
+                          HorizontalAlignment="Stretch"
+                          PlaceholderText="Select a Minecraft version first"/>
+            </StackPanel>
+
+            </StackPanel>
+
+            <!-- Server address (optional) -->
+            <StackPanel>
+                <TextBlock Text="Server Address (optional)"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           Margin="0,0,0,4"/>
+                <TextBox x:Name="_serverAddressTextBox"
+                         Watermark="e.g. play.example.com:25565"
+                         HorizontalAlignment="Stretch"/>
+            </StackPanel>
+          </StackPanel>
+          </ScrollViewer>
+        </Grid>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="0,20,0,0">
+            <Button Content="Cancel"
+                    Classes="subtle"
+                    MinWidth="91"
+                    Height="37"
+                    FontSize="13"
+                    Click="CancelButton_Click"/>
+            <Button x:Name="_saveButton"
+                    Content="Save"
+                    Classes="success"
+                    MinWidth="91"
+                    Height="37"
+                    FontSize="13"
+                    IsEnabled="False"
+                    Click="SaveButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

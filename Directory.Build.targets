@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup Condition="'$(HALERITH_SANDBOX_BUILD)' == 'true'">
+    <DefineConstants>$(DefineConstants);HALERITH_SANDBOX_BUILD</DefineConstants>
+  </PropertyGroup>
+</Project>

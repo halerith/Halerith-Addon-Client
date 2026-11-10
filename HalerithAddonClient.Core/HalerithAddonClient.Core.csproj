@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0-windows;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <NoWarn>IL2026;IL2104</NoWarn>
+
+    <Version>5.7.2</Version>
+    <AssemblyVersion>5.7.2.0</AssemblyVersion>
+    <FileVersion>5.7.2.0</FileVersion>
+    <Company>Halerith</Company>
+    <Authors>Halerith</Authors>
+    <Product>Halerith Addon Client</Product>
+    <Copyright>© 2026 Halerith. All rights reserved.</Copyright>
+    <Description>Core library for Halerith Addon Client</Description>
+    <ModrinthContactEmail>modrinth@halerith.com</ModrinthContactEmail>
+    <CurseForgeContactEmail>curseforge@halerith.com</CurseForgeContactEmail>
+
+    <!-- Passed from the main HalerithAddonClient.csproj when enabled. -->
+    <DebugBuild Condition="'$(DebugBuild)' == ''">false</DebugBuild>
+
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DebugBuild)' == 'true'">
+    <DefineConstants>$(DefineConstants);HALERITH_DEBUG_BUILD;MANIFEST_DEBUG_DUMP</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.9" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
+    <PackageReference Include="System.Management" Version="10.0.9" Condition="'$(TargetFramework)' == 'net10.0-windows'" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.9" Condition="'$(TargetFramework)' == 'net10.0-windows'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\HalerithAddonClient.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ModrinthContactEmail</_Parameter1>
+      <_Parameter2>$(ModrinthContactEmail)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>CurseForgeContactEmail</_Parameter1>
+      <_Parameter2>$(CurseForgeContactEmail)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>CurseForgeApiKey</_Parameter1>
+      <_Parameter2>$(CurseForgeApiKey)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+<ItemGroup><EmbeddedResource Include="linux-release-public.pem" LogicalName="LinuxReleasePublicKey" /></ItemGroup>
+</Project>

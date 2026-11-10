@@ -1,0 +1,320 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Pterodactyl-inspired implicit control styles.
+        All colour references are resource keys defined in DarkTheme.axaml
+        and Dark.axaml, which must be loaded BEFORE this stylesheet.
+
+        IMPORTANT: These are implicit styles (no class selector) — they replace
+        the FluentTheme defaults for each control type across the application.
+        Named class-based styles (accent, success, curseforge etc.) live in
+        Shared.axaml and are applied via Classes="accent" on the control.
+    -->
+
+    <Style Selector="Window">
+        <Setter Property="FontFamily" Value="{StaticResource BodyFontFamily}"/>
+    </Style>
+
+    <Style Selector="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource BodyFontFamily}"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Button — dark surface normal, AccentBlue hover, AccentBlueDark press.
+         CornerRadius=6, keyboard focus shown via border highlight.
+
+         IMPORTANT:  The ContentPresenter is deliberately named "contentPresenter"
+         (lowercase) instead of "PART_ContentPresenter" to prevent the Fluent
+         ControlTheme's :pointerover style from matching it and painting a
+         rectangular background inside the rounded button border.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="Button">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderColorBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="FontFamily" Value="{StaticResource BodyFontFamily}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Padding="{TemplateBinding Padding}"
+                        ClipToBounds="True">
+                    <ContentPresenter Name="contentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="Button:not(.accent):not(.success):not(.curseforge):not(.warning):not(.danger):not(.subtle):not(.hyperlink):pointerover /template/ Border#border">
+        <Setter Property="Background" Value="{StaticResource AccentBlueBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBlueBrush}"/>
+    </Style>
+
+    <Style Selector="Button:not(.accent):not(.success):not(.curseforge):not(.warning):not(.danger):not(.subtle):not(.hyperlink):pressed /template/ Border#border">
+        <Setter Property="Background" Value="{StaticResource AccentBlueDarkBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBlueDarkBrush}"/>
+    </Style>
+
+    <Style Selector="Button:focus-visible /template/ Border#border">
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBlueBrush}"/>
+    </Style>
+
+    <Style Selector="Button:disabled /template/ Border#border">
+        <Setter Property="Opacity" Value="0.4"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         TextBox — Surface background, BorderColor border, AccentBlue caret.
+         We do NOT override the ControlTemplate — the Fluent theme handles
+         scrolling, selection adorners, watermark, and multi-line.  We only
+         override visual properties and state pseudo-classes.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="TextBox">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderColorBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="FontFamily" Value="{StaticResource BodyFontFamily}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="CaretBrush" Value="{StaticResource AccentBlueBrush}"/>
+        <Setter Property="SelectionBrush" Value="{StaticResource AccentBlueBrush}"/>
+        <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+
+    <Style Selector="TextBox:pointerover">
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBlueBrush}"/>
+    </Style>
+
+    <Style Selector="TextBox:focus">
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBlueBrush}"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         ComboBox — same visual treatment as TextBox.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="ComboBox">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderColorBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="FontFamily" Value="{StaticResource BodyFontFamily}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+
+    <Style Selector="ComboBox:pointerover">
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBlueBrush}"/>
+    </Style>
+
+    <Style Selector="ComboBox:focus">
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBlueBrush}"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         DataGrid — themed column headers, base cell styling.
+         Row-level hover/selected/tint styles are applied in each window's
+         inline <DataGrid.Styles> to avoid conflicts with the Fluent
+         ControlTheme that manages DataGridRow and DataGridCell rendering.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="DataGrid">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderColorBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="RowHeight" Value="33"/>
+        <Setter Property="FontFamily" Value="{StaticResource BodyFontFamily}"/>
+    </Style>
+
+    <Style Selector="DataGridColumnHeader">
+        <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderColorBrush}"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <Style Selector="DataGridCell">
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderColorBrush}"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        <Setter Property="FocusAdorner" Value="{x:Null}"/>
+    </Style>
+
+    <Style Selector="DataGridRow:pointerover">
+        <Setter Property="Background" Value="{StaticResource SurfaceHoverBrush}"/>
+    </Style>
+
+    <Style Selector="DataGridRow:selected">
+        <Setter Property="Background" Value="{StaticResource AccentBlueBrush}"/>
+    </Style>
+
+    <Style Selector="DataGridCell:pointerover">
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <Style Selector="DataGridCell:selected">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+    </Style>
+
+    <Style Selector="DataGridCell:selected:pointerover">
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <Style Selector="DataGridCell:current">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderColorBrush}"/>
+    </Style>
+
+    <Style Selector="DataGridCell:focus">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderColorBrush}"/>
+    </Style>
+
+    <Style Selector="DataGridCell:current /template/ Rectangle">
+        <Setter Property="IsVisible" Value="False"/>
+    </Style>
+
+    <Style Selector="DataGridCell:focus /template/ Rectangle">
+        <Setter Property="IsVisible" Value="False"/>
+    </Style>
+
+    <Style Selector="DataGridCell:current /template/ Border">
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+    <Style Selector="DataGridCell:focus /template/ Border">
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         ProgressBar — Surface background, AccentBlue fill.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="ProgressBar">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource ProgressBarFillBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Height" Value="4"/>
+        <Setter Property="CornerRadius" Value="2"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         CheckBox — AccentBlue checked state.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="CheckBox">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="FontSize" Value="13"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         RadioButton
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="RadioButton">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="FontSize" Value="13"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         ScrollBar — Let Fluent theme handle the template.
+         Just tint the background to keep it from clashing.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="ScrollBar">
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         TextBlock semantic class styles
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="TextBlock.header">
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+    </Style>
+
+    <Style Selector="TextBlock.subheader">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+    </Style>
+
+    <Style Selector="TextBlock.body">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+    </Style>
+
+    <Style Selector="TextBlock.muted">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         ListBox / ListBoxItem
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="ListBox">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderColorBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+    <Style Selector="ListBoxItem">
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="FontSize" Value="13"/>
+    </Style>
+
+    <Style Selector="ListBoxItem:pointerover">
+        <Setter Property="Background" Value="{StaticResource SurfaceHoverBrush}"/>
+    </Style>
+
+    <Style Selector="ListBoxItem:selected">
+        <Setter Property="Background" Value="{StaticResource AccentBlueBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Expander
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="Expander">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+    </Style>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         TabControl / TabItem — selected tab blends into the content area
+         using the same background colour as the page behind it.
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <Style Selector="TabControl">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderColorBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+    <Style Selector="TabItem">
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="FontSize" Value="13"/>
+    </Style>
+
+    <Style Selector="TabItem:selected">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource LogBackgroundBrush}"/>
+    </Style>
+
+</Styles>

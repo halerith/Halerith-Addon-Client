@@ -1,0 +1,56 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Background Brushes -->
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#2E2E2E"/>
+    <SolidColorBrush x:Key="BackgroundAltBrush" Color="#383838"/>
+    <SolidColorBrush x:Key="BackgroundAlt2Brush" Color="#323232"/>
+
+    <!-- Text Brushes -->
+    <SolidColorBrush x:Key="TextBrush" Color="#F0F0F0"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#B8B8B8"/>
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#888888"/>
+
+    <!-- Accent and Separator -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#0078D4"/>
+    <SolidColorBrush x:Key="SeparatorBrush" Color="#4A4A4A"/>
+
+    <!-- Status Brushes -->
+    <SolidColorBrush x:Key="StatusIdleBrush" Color="#4DA6E8"/>
+    <SolidColorBrush x:Key="StatusOkBrush" Color="#4DC86A"/>
+    <SolidColorBrush x:Key="StatusErrorBrush" Color="#E05C5C"/>
+    <SolidColorBrush x:Key="StatusWarningBrush" Color="#F0B040"/>
+    <SolidColorBrush x:Key="StatusInfoBrush" Color="#58A6FF"/>
+
+    <!-- Log Brushes -->
+    <SolidColorBrush x:Key="LogBackgroundBrush" Color="#252525"/>
+    <SolidColorBrush x:Key="LogForegroundBrush" Color="#CCD4E4"/>
+    <SolidColorBrush x:Key="LogWarningBrush" Color="#F0B040"/>
+    <SolidColorBrush x:Key="LogErrorBrush" Color="#E07070"/>
+
+    <!-- Grid Brushes -->
+    <SolidColorBrush x:Key="GridHeaderBrush" Color="#3C3C3C"/>
+    <SolidColorBrush x:Key="GridHeaderTextBrush" Color="#D0D8E8"/>
+    <SolidColorBrush x:Key="GridSelectionBrush" Color="#1A5FAA"/>
+    <SolidColorBrush x:Key="GridSelectionTextBrush" Color="#F0F0F0"/>
+
+    <!-- Row Status Tint Brushes - Background -->
+    <SolidColorBrush x:Key="RowActionBrush" Color="#4A3A1A"/>
+    <SolidColorBrush x:Key="RowActionTextBrush" Color="#F0F0F0"/>
+
+    <SolidColorBrush x:Key="RowUpToDateBrush" Color="#1A3C20"/>
+    <SolidColorBrush x:Key="RowUpToDateTextBrush" Color="#F0F0F0"/>
+
+    <SolidColorBrush x:Key="RowPresentBrush" Color="#222448"/>
+    <SolidColorBrush x:Key="RowPresentTextBrush" Color="#F0F0F0"/>
+
+    <SolidColorBrush x:Key="RowIgnoredBrush" Color="#363636"/>
+    <SolidColorBrush x:Key="RowIgnoredTextBrush" Color="#787878"/>
+
+    <SolidColorBrush x:Key="RowPendingBrush" Color="#242448"/>
+    <SolidColorBrush x:Key="RowPendingTextBrush" Color="#9898DC"/>
+
+    <SolidColorBrush x:Key="RowNoVersionBrush" Color="#302038"/>
+    <SolidColorBrush x:Key="RowNoVersionTextBrush" Color="#787878"/>
+
+</ResourceDictionary>

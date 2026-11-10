@@ -1,0 +1,78 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="HalerithAddonClient.LauncherWindow"
+        SystemDecorations="None"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
+        CanResize="False"
+        Width="460"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="True"
+        Opened="Window_Opened">
+
+    <!-- Outer transparent canvas that lets the shadow bleed outside the card -->
+    <Grid Margin="10">
+        <!-- The visible card with shadow -->
+        <Border Background="{DynamicResource SurfaceBrush}"
+                CornerRadius="10"
+                BoxShadow="0 4 20 0 #59000000">
+            <Grid Margin="24,18,24,16" RowDefinitions="Auto,Auto,8,Auto,10,Auto">
+                <!-- App title -->
+                <TextBlock Grid.Row="0"
+                           Text="Halerith Addon Client Launcher"
+                           FontSize="15"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           HorizontalAlignment="Left" />
+
+                <!-- Status line -->
+                <TextBlock Grid.Row="1"
+                           x:Name="StatusText"
+                           Text="Initialising…"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           HorizontalAlignment="Left"
+                           Margin="0,4,0,0"
+                           TextTrimming="CharacterEllipsis" />
+
+                <!-- Progress bar -->
+                <ProgressBar Grid.Row="3"
+                             x:Name="SyncProgress"
+                             Height="6"
+                             Minimum="0"
+                             Maximum="100"
+                             Value="0"
+                             IsIndeterminate="True"
+                             HorizontalAlignment="Stretch" />
+
+                <!-- Footer: server selector (left) + cancel button (right) -->
+                <DockPanel Grid.Row="5" LastChildFill="False">
+                    <Button x:Name="BuildButton"
+                            DockPanel.Dock="Right"
+                            Content="Build &amp; Continue"
+                            FontSize="11"
+                            Padding="12,3"
+                            Margin="6,0,0,0"
+                            IsVisible="False"
+                            Click="BuildButton_Click" />
+                    <Button x:Name="CancelButton"
+                            DockPanel.Dock="Right"
+                            Content="Cancel"
+                            FontSize="11"
+                            Padding="12,3"
+                            Click="CancelButton_Click" />
+                    <StackPanel DockPanel.Dock="Left"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <ComboBox x:Name="ServerComboBox"
+                                  FontSize="11"
+                                  MinWidth="145"
+                                  MaxWidth="145"
+                                  SelectionChanged="ServerComboBox_SelectionChanged" />
+                    </StackPanel>
+                </DockPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

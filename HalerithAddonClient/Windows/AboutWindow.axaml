@@ -1,0 +1,71 @@
+<Window x:Class="HalerithAddonClient.Windows.AboutWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="About Halerith Addon Client"
+        Width="420"
+        Height="390"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BackgroundBrush}">
+
+    <Border Padding="24">
+        <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+            <StackPanel Grid.Row="0"
+                        HorizontalAlignment="Center"
+                        Spacing="12">
+                <Border Width="72"
+                        Height="72"
+                        CornerRadius="14"
+                        ClipToBounds="True"
+                        Background="{DynamicResource SurfaceBrush}">
+                    <Image x:Name="_appIconImage"
+                           Width="72"
+                           Height="72"
+                           Stretch="UniformToFill"/>
+                </Border>
+
+                <StackPanel Spacing="3"
+                            HorizontalAlignment="Center">
+                    <TextBlock Text="Halerith Addon Client"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock x:Name="_versionText"
+                               FontSize="12"
+                               HorizontalAlignment="Center"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                </StackPanel>
+            </StackPanel>
+
+            <TextBlock Grid.Row="1"
+                       Text="Build, sync and launch your Minecraft instances. Supports Minecraft: Java Edition; Minecraft is not included."
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"
+                       FontSize="13"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       Margin="8,18,8,0"/>
+
+            <TextBlock Grid.Row="2"
+                       Text="Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.&#x0a;&#x0a;(c) 2026 Halerith. All rights reserved."
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"
+                       FontSize="12"
+                       Foreground="{DynamicResource TextMutedBrush}"
+                       Margin="0,14,0,0"/>
+
+            <StackPanel Grid.Row="4"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Spacing="12"
+                        Margin="0,22,0,0">
+                <Button Classes="hyperlink"
+                        Content="Website"
+                        Click="Website_Click"/>
+                <Button Classes="hyperlink"
+                        Content="Privacy"
+                        Click="Privacy_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

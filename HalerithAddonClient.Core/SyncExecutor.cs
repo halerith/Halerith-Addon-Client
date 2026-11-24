@@ -106,12 +106,18 @@ public sealed class SyncExecutor
         var tempFile = SafeFileHelpers.CreateDownloadTempPath(targetFolder, filename);
         var targetFile = SafeFileHelpers.CombineUnderDirectory(targetFolder, filename);
 
+        var previousHash = File.Exists(targetFile)
+            ? Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(targetFile))) : null;
         _log($"Downloading: {GetDisplayName(action)} -> {filename}");
         try
         {
             var expectedHash = GetRequiredDownloadHash(action);
             await _apiClient.DownloadFileAsync(downloadUrl, tempFile, ct, DownloadLimit(action)).ConfigureAwait(false);
             await SafeFileHelpers.VerifyExpectedHashAsync(tempFile, expectedHash, ct).ConfigureAwait(false);
+            var targetHash = File.Exists(targetFile)
+                ? Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(targetFile))) : null;
+            if (!string.Equals(previousHash, targetHash, StringComparison.Ordinal))
+                throw new InvalidOperationException("The destination changed during download. Refresh and resolve the local file conflict before retrying.");
             var backup = BackupPath(targetFolder, targetFile);
             VerifiedContentCommit.Commit(tempFile, targetFile, targetFile, backup, _fileOperations, _log);
             if (backup is not null) PruneBackupFolder(Path.GetDirectoryName(backup)!);
@@ -134,16 +140,16 @@ public sealed class SyncExecutor
         Directory.CreateDirectory(targetFolder);
         var tempFile = SafeFileHelpers.CreateDownloadTempPath(targetFolder, filename);
         var targetFile = SafeFileHelpers.CombineUnderDirectory(targetFolder, filename);
+        var reviewedHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(local.FullPath)));
 
         try
         {
             var expectedHash = GetRequiredDownloadHash(action);
-            var packManaged = action.ManifestMod?.PackManaged == true || action.PackManifestItem?.PackManaged == true;
             var renaming = !string.Equals(Path.GetFullPath(local.FullPath), Path.GetFullPath(targetFile), OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
-            if (packManaged && renaming && File.Exists(targetFile))
-                throw new InvalidOperationException("The pack filename is already occupied. Review the duplicate file before retrying.");
+            if (renaming && File.Exists(targetFile))
+                throw new InvalidOperationException("The destination filename is already occupied. Resolve the local file conflict before retrying.");
             var reuse = false;
-            if (packManaged && renaming && File.Exists(local.FullPath))
+            if (renaming && File.Exists(local.FullPath))
             {
                 try
                 {
@@ -155,6 +161,9 @@ public sealed class SyncExecutor
             if (reuse) File.Copy(local.FullPath, tempFile, overwrite: false);
             else await _apiClient.DownloadFileAsync(downloadUrl, tempFile, ct, DownloadLimit(action)).ConfigureAwait(false);
             await SafeFileHelpers.VerifyExpectedHashAsync(tempFile, expectedHash, ct).ConfigureAwait(false);
+            var currentHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(local.FullPath)));
+            if (!string.Equals(reviewedHash, currentHash, StringComparison.Ordinal))
+                throw new InvalidOperationException("The installed file changed during download. Refresh before retrying.");
             var backup = BackupPath(targetFolder, local.FullPath);
             VerifiedContentCommit.Commit(tempFile, targetFile, local.FullPath, backup, _fileOperations, _log);
             if (backup is not null) PruneBackupFolder(Path.GetDirectoryName(backup)!);

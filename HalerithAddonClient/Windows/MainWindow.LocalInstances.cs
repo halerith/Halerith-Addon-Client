@@ -393,7 +393,6 @@ public partial class MainWindow
         _localFailedActions.Text = failedActions.ToString();
         _localStatusText.Text = string.IsNullOrWhiteSpace(statusText) ? "Ready" : statusText;
         _localIdleCountsPanel.IsVisible = !busy;
-        _localProgressBar.IsVisible = busy;
 
         _localPendingActions.Foreground = pendingActions > 0
             ? new SolidColorBrush(Color.FromRgb(0xF5, 0x9E, 0x0B))
@@ -467,15 +466,14 @@ public partial class MainWindow
         var plan = item.CachedPlan;
         if (plan is null || plan.PendingActions == 0) return;
 
+        using var activity = _vm.BeginClientActivity(0);
+
         var inst = item.Instance;
 
         item.IsRefreshing = true;
         _localUpdateButton.IsEnabled = false;
         _localRefreshButton.IsEnabled = false;
         SetLocalSummary(item.CachedTotalItems, item.CachedPendingActions, item.CachedFailedActions, "Applying updates...", busy: true);
-        _localProgressBar.IsIndeterminate = false;
-        _localProgressBar.Maximum = 100;
-        _localProgressBar.Value = 0;
         _vm.AppendConsole($"[{item.DisplayName}] Applying updates…");
 
         var failedActions = 0;
@@ -491,7 +489,7 @@ public partial class MainWindow
                     Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                     {
                         var pct = total > 0 ? (double)completed / total * 100 : 0;
-                        _localProgressBar.Value = pct;
+                        activity.SetProgress(pct);
                     });
                 });
 
@@ -509,9 +507,6 @@ public partial class MainWindow
         }
         finally
         {
-            _localProgressBar.IsVisible = false;
-            _localProgressBar.IsIndeterminate = false;
-            _localProgressBar.Value = 0;
             _localRefreshButton.IsEnabled = true;
             item.IsRefreshing = false;
         }
@@ -588,6 +583,7 @@ public partial class MainWindow
         }
         if (planItem?.PackMember is { } packMember && planItem.LatestVersionResult is not null)
         {
+            using var activity = _vm.BeginClientActivity();
             try { await new Core.LocalModpacks.LocalPackInstaller().ChangeMemberAsync(_selectedLocalInstance.Instance.Id, _selectedLocalInstance.Instance.GetInstanceDirectory(), packMember.Path, planItem.LatestVersionResult, true); }
             catch (Exception error) { _vm.AppendConsole(error.Message); }
             await RefreshLocalInstanceContentAsync(_selectedLocalInstance);
@@ -601,6 +597,7 @@ public partial class MainWindow
 
 
         btn.IsEnabled = false;
+        using var updateActivity = _vm.BeginClientActivity();
 
         try
         {
@@ -649,6 +646,8 @@ public partial class MainWindow
         if (item.IsRefreshing)
             return;
 
+        using var activity = _vm.BeginClientActivity();
+
         var inst = item.Instance;
         var isActivePanel = _selectedLocalInstance == item;
 
@@ -660,7 +659,6 @@ public partial class MainWindow
             _localRefreshButton.IsEnabled = false;
             _localUpdateButton.IsEnabled = false;
             SetLocalSummary(item.CachedTotalItems, item.CachedPendingActions, item.CachedFailedActions, "Refreshing...", busy: true);
-            _localProgressBar.IsIndeterminate = true;
         }
 
         try
@@ -734,9 +732,6 @@ public partial class MainWindow
             if (_selectedLocalInstance == item)
             {
                 _localRefreshButton.IsEnabled = true;
-                _localProgressBar.IsVisible = false;
-                _localProgressBar.IsIndeterminate = false;
-                _localProgressBar.Value = 0;
                 _localIdleCountsPanel.IsVisible = true;
             }
         }

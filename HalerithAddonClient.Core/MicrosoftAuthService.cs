@@ -197,6 +197,13 @@ public sealed class MicrosoftAuthService : IDisposable
         });
 
         var resp = await _http.PostAsync(MsTokenUrl, content, ct).ConfigureAwait(false);
+        if (resp.StatusCode == System.Net.HttpStatusCode.BadRequest)
+        {
+            var error = await resp.Content.ReadFromJsonAsync<MsErrorResponse>(SerializerOptions.Default, ct)
+                .ConfigureAwait(false);
+            if (error?.Error is "invalid_grant" or "interaction_required")
+                throw new MinecraftSignInRequiredException();
+        }
         resp.EnsureSuccessStatusCode();
 
         var msToken = await resp.Content.ReadFromJsonAsync<MsTokenResponse>(SerializerOptions.Default, ct).ConfigureAwait(false)
@@ -204,8 +211,10 @@ public sealed class MicrosoftAuthService : IDisposable
 
         var refreshed = await ExchangeAsync(msToken, ct).ConfigureAwait(false);
 
-        // Preserve the original UUID (shouldn't change, but be safe)
-        refreshed.Uuid = account.Uuid;
+        // A token exchange must never replace another Minecraft account's credentials.
+        if (!string.Equals(MinecraftProfileClient.NormalizeUuid(refreshed.Uuid),
+                MinecraftProfileClient.NormalizeUuid(account.Uuid), StringComparison.OrdinalIgnoreCase))
+            throw new MinecraftSignInRequiredException();
         // Microsoft normally rotates refresh tokens, but a valid refresh response
         // is also allowed to omit a replacement. Keep the previous long-lived token
         // in that case so the next application launch can refresh again.

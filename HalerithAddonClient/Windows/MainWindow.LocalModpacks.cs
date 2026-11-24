@@ -87,6 +87,7 @@ public partial class MainWindow
             return result is not null;
         }
         var installer = new LocalPackInstaller(_vm.AppendConsole);
+        using var activity = _vm.BeginClientActivity();
         var wasRefreshing = item.IsRefreshing;
         item.IsRefreshing = true;
         try

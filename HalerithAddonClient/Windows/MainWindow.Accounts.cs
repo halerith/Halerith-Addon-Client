@@ -122,6 +122,38 @@ public partial class MainWindow
             RemoveServerAccount(account);
     }
 
+    private async void AccountSignInMenuButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        e.Handled = true;
+        _accountComboBox.IsDropDownOpen = false;
+        if (sender is Button { Tag: AccountPickerItem { Account: { } account } })
+            await SignInAgainAsync(account);
+    }
+
+    private async Task SignInAgainAsync(MinecraftAccount target)
+    {
+        var signedIn = await new MicrosoftLoginWindow().ShowDialog<MinecraftAccount?>(this);
+        if (signedIn is null)
+            return;
+
+        RefreshAccountSelectorForSettings();
+        if (!string.Equals(MinecraftProfileClient.NormalizeUuid(signedIn.Uuid),
+                MinecraftProfileClient.NormalizeUuid(target.Uuid), StringComparison.OrdinalIgnoreCase))
+        {
+            _vm.StatusText = $"Added {signedIn.Gamertag}. {target.Gamertag} still needs sign-in.";
+            return;
+        }
+
+        AccountStore.SetSignInRequired(target.Uuid, false);
+        RefreshAccountSelectorForSettings();
+        if (string.Equals(AccountStore.GetDefaultAccountId(), target.Uuid, StringComparison.OrdinalIgnoreCase))
+        {
+            await _vm.LoadServersAsync();
+            await _vm.LoadAllServersAsync();
+        }
+        RefreshAccountSelectorForSettings();
+    }
+
     private void RemoveServerAccount(MinecraftAccount selected)
     {
         AccountStore.Remove(selected.Uuid);
@@ -297,6 +329,14 @@ public partial class MainWindow
         e.Handled = true;
         if (sender is Button { Tag: AccountPickerItem { Account: { } account } })
             RemoveLocalAccount(account);
+    }
+
+    private async void LocalAccountSignInMenuButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        e.Handled = true;
+        _localAccountComboBox.IsDropDownOpen = false;
+        if (sender is Button { Tag: AccountPickerItem { Account: { } account } })
+            await SignInAgainAsync(account);
     }
 
     private void RemoveLocalAccount(MinecraftAccount selected)

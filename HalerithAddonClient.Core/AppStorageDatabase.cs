@@ -258,7 +258,7 @@ public static class AppStorageDatabase
         using var cmd = db.CreateCommand();
         cmd.CommandText = """
             SELECT uuid, gamertag, xuid, ms_access_token_protected, ms_refresh_token_protected,
-                   mc_access_token_protected, expires_at_utc
+                   mc_access_token_protected, expires_at_utc, requires_sign_in
             FROM minecraft_accounts
             ORDER BY gamertag COLLATE NOCASE, uuid COLLATE NOCASE
             """;
@@ -276,6 +276,7 @@ public static class AppStorageDatabase
                 MsRefreshToken = reader.IsDBNull(4) ? "" : UnprotectString((byte[])reader.GetValue(4)),
                 McAccessToken = reader.IsDBNull(5) ? "" : UnprotectString((byte[])reader.GetValue(5)),
                 ExpiresAtUtc = ParseUtc(reader.GetString(6)),
+                RequiresSignIn = reader.GetInt32(7) != 0,
             });
         }
 
@@ -299,10 +300,10 @@ public static class AppStorageDatabase
         cmd.CommandText = """
             INSERT INTO minecraft_accounts (
                 uuid, gamertag, xuid, ms_access_token_protected, ms_refresh_token_protected,
-                mc_access_token_protected, expires_at_utc, updated_at
+                mc_access_token_protected, expires_at_utc, requires_sign_in, updated_at
             )
             VALUES (
-                $uuid, $gamertag, $xuid, $msAccess, $msRefresh, $mcAccess, $expires, datetime('now')
+                $uuid, $gamertag, $xuid, $msAccess, $msRefresh, $mcAccess, $expires, $requiresSignIn, datetime('now')
             )
             ON CONFLICT(uuid) DO UPDATE SET
                 gamertag = excluded.gamertag,
@@ -311,6 +312,7 @@ public static class AppStorageDatabase
                 ms_refresh_token_protected = excluded.ms_refresh_token_protected,
                 mc_access_token_protected = excluded.mc_access_token_protected,
                 expires_at_utc = excluded.expires_at_utc,
+                requires_sign_in = excluded.requires_sign_in,
                 updated_at = datetime('now')
             """;
         cmd.Parameters.AddWithValue("$uuid", account.Uuid);
@@ -320,6 +322,17 @@ public static class AppStorageDatabase
         AddProtectedParameter(cmd, "$msRefresh", account.MsRefreshToken);
         AddProtectedParameter(cmd, "$mcAccess", account.McAccessToken);
         cmd.Parameters.AddWithValue("$expires", account.ExpiresAtUtc.ToUniversalTime().ToString("O"));
+        cmd.Parameters.AddWithValue("$requiresSignIn", account.RequiresSignIn ? 1 : 0);
+        cmd.ExecuteNonQuery();
+    }
+
+    public static void SetMinecraftAccountSignInRequired(string uuid, bool required)
+    {
+        using var db = OpenConnection();
+        using var cmd = db.CreateCommand();
+        cmd.CommandText = "UPDATE minecraft_accounts SET requires_sign_in = $required WHERE uuid = $uuid";
+        cmd.Parameters.AddWithValue("$uuid", uuid);
+        cmd.Parameters.AddWithValue("$required", required ? 1 : 0);
         cmd.ExecuteNonQuery();
     }
 
@@ -1027,6 +1040,7 @@ public static class AppStorageDatabase
                 ms_refresh_token_protected BLOB,
                 mc_access_token_protected  BLOB,
                 expires_at_utc             TEXT NOT NULL DEFAULT '',
+                requires_sign_in           INTEGER NOT NULL DEFAULT 0,
                 created_at                 TEXT NOT NULL DEFAULT (datetime('now')),
                 updated_at                 TEXT NOT NULL DEFAULT (datetime('now'))
             )
@@ -1885,6 +1899,7 @@ public static class AppStorageDatabase
     private static void EnsureMinecraftAccountColumns(SqliteConnection db)
     {
         EnsureColumn(db, "minecraft_accounts", "xuid", "TEXT NOT NULL DEFAULT ''");
+        EnsureColumn(db, "minecraft_accounts", "requires_sign_in", "INTEGER NOT NULL DEFAULT 0");
     }
 
     private static void EnsureColumn(SqliteConnection db, string table, string column, string definition)

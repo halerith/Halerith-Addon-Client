@@ -11,6 +11,7 @@ public partial class MainWindow
     private string? _localBuildButtonPollKey;
     private string? _serverBuildConsoleLabel;
     private string? _localBuildConsoleLabel;
+    private readonly HashSet<ActiveBuildTracker.BuildState> _observedBuilds = new();
     private bool _serverLaunchStarting;
     private bool _localLaunchStarting;
     private readonly Dictionary<string, System.Diagnostics.Process> _trustedBuiltInSessionProcesses = new(StringComparer.OrdinalIgnoreCase);
@@ -225,7 +226,6 @@ public partial class MainWindow
                 effective.RuntimeBuildStatus = ServerRuntimeBuildStatus.Building;
                 if (!ReferenceEquals(effective, selected))
                     selected.RuntimeBuildStatus = ServerRuntimeBuildStatus.Building;
-                SetServerBuildActivity(active);
                 SetBuildProgressButtonState(_launchButton, _launchButtonText, _launchBuildProgressBar, active);
                 StartServerBuildButtonPoll(key, effective, active);
                 return;
@@ -290,7 +290,6 @@ public partial class MainWindow
         if (active is not null && !active.BuildTask.IsCompleted)
         {
             item.BuildStatus = LocalInstanceBuildStatus.Building;
-            SetLocalBuildActivity(active);
             SetBuildProgressButtonState(_localLaunchButton, _localLaunchButtonText, _localLaunchBuildProgressBar, active);
             StartLocalBuildButtonPoll(key, item, active);
             return;
@@ -314,6 +313,7 @@ public partial class MainWindow
 
     private void StartServerBuildButtonPoll(string key, ServerItemViewModel effectiveServer, ActiveBuildTracker.BuildState state)
     {
+        ObserveBuildActivity(state);
         if (string.Equals(_serverBuildButtonPollKey, key, StringComparison.OrdinalIgnoreCase))
             return;
 
@@ -334,7 +334,6 @@ public partial class MainWindow
                 }
 
                 SetBuildProgressButtonState(_launchButton, _launchButtonText, _launchBuildProgressBar, state);
-                SetServerBuildActivity(state);
                 AppendServerBuildProgress(effectiveServer, state);
                 await Task.Delay(250);
             }
@@ -370,6 +369,7 @@ public partial class MainWindow
 
     private void StartLocalBuildButtonPoll(string key, LocalInstanceItemViewModel item, ActiveBuildTracker.BuildState state)
     {
+        ObserveBuildActivity(state);
         if (string.Equals(_localBuildButtonPollKey, key, StringComparison.OrdinalIgnoreCase))
             return;
 
@@ -391,7 +391,6 @@ public partial class MainWindow
 
                 item.BuildStatus = LocalInstanceBuildStatus.Building;
                 SetBuildProgressButtonState(_localLaunchButton, _localLaunchButtonText, _localLaunchBuildProgressBar, state);
-                SetLocalBuildActivity(state);
                 AppendLocalBuildProgress(item, state);
                 await Task.Delay(250);
             }
@@ -591,36 +590,46 @@ public partial class MainWindow
         return Math.Clamp((int)Math.Round(state.Completed / (double)total * 100), 0, 100);
     }
 
-    private void SetServerBuildActivity(ActiveBuildTracker.BuildState state)
+    private void ObserveBuildActivity(ActiveBuildTracker.BuildState state)
     {
-        _vm.SetBuildActivityProgress(BuildProgressPercent(state));
+        if (state.BuildTask.IsCompleted || !_observedBuilds.Add(state))
+            return;
+
+        _ = ObserveBuildActivityAsync(state);
+    }
+
+    private void OnBuildRegistered(ActiveBuildTracker.BuildState state)
+    {
+        if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            ObserveBuildActivity(state);
+        else
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => ObserveBuildActivity(state));
+    }
+
+    private async Task ObserveBuildActivityAsync(ActiveBuildTracker.BuildState state)
+    {
+        using var activity = _vm.BeginClientActivity(BuildProgressPercent(state));
+        try
+        {
+            while (!state.BuildTask.IsCompleted)
+            {
+                activity.SetProgress(BuildProgressPercent(state));
+                await Task.Delay(250);
+            }
+        }
+        finally
+        {
+            _observedBuilds.Remove(state);
+        }
     }
 
     private void ClearServerBuildActivity()
     {
-        _vm.SetBuildActivityProgress(null);
         _serverBuildConsoleLabel = null;
-    }
-
-    private void SetLocalBuildActivity(ActiveBuildTracker.BuildState state)
-    {
-        if (_localProgressBar is null)
-            return;
-
-        _localProgressBar.IsVisible = true;
-        _localProgressBar.IsIndeterminate = false;
-        _localProgressBar.Maximum = 100;
-        _localProgressBar.Value = BuildProgressPercent(state);
     }
 
     private void ClearLocalBuildActivity()
     {
-        if (_localProgressBar is null)
-            return;
-
-        _localProgressBar.IsVisible = true;
-        _localProgressBar.IsIndeterminate = false;
-        _localProgressBar.Value = 0;
         _localBuildConsoleLabel = null;
     }
 

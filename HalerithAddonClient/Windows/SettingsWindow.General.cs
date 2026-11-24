@@ -315,6 +315,16 @@ public partial class SettingsWindow
 
         try
         {
+            var authentication = await MinecraftAccountAuthentication.EnsureReadyAsync(AccountStore.GetDefaultAccountId());
+            if (authentication != MinecraftAuthenticationResult.Ready)
+            {
+                PopulateDefaultAccountComboBox();
+                SetErrorStatus(authentication == MinecraftAuthenticationResult.SignInRequired
+                    ? "Minecraft sign-in is required. Use the sign-in button beside this account."
+                    : "Could not renew Minecraft authentication. Try again later.");
+                return;
+            }
+
             var runtime = config.ToRuntimeConfig(host, host.DefaultServerPublicId);
             AppConfigStore.ValidateForRuntime(runtime);
 
@@ -365,6 +375,25 @@ public partial class SettingsWindow
         e.Handled = true;
         if (sender is Button { Tag: AccountPickerItem { Account: { } account } })
             RemoveDefaultAccount(account);
+    }
+
+    private async void DefaultAccountSignInMenuButton_Click(object? sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        _defaultAccountComboBox!.IsDropDownOpen = false;
+        if (sender is not Button { Tag: AccountPickerItem { Account: { } target } }) return;
+        var signedIn = await new MicrosoftLoginWindow().ShowDialog<MinecraftAccount?>(this);
+        if (signedIn is null) return;
+        PopulateDefaultAccountComboBox();
+        if (!string.Equals(MinecraftProfileClient.NormalizeUuid(signedIn.Uuid),
+                MinecraftProfileClient.NormalizeUuid(target.Uuid), StringComparison.OrdinalIgnoreCase))
+        {
+            SetInfoStatus($"Added {signedIn.Gamertag}. {target.Gamertag} still needs sign-in.");
+            return;
+        }
+        AccountStore.SetSignInRequired(target.Uuid, false);
+        PopulateDefaultAccountComboBox();
+        await RefreshDefaultServersForSelectedAccountAsync();
     }
 
     private void RemoveDefaultAccount(MinecraftAccount selected)

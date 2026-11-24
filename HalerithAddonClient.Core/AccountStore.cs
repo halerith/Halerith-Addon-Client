@@ -32,6 +32,12 @@ public static class AccountStore
         AppStorageDatabase.SaveMinecraftAccount(account);
     }
 
+    public static void SetSignInRequired(string uuid, bool required)
+    {
+        if (!string.IsNullOrWhiteSpace(uuid))
+            AppStorageDatabase.SetMinecraftAccountSignInRequired(uuid, required);
+    }
+
     /// <summary>Sets the global default launcher account UUID.</summary>
     public static void SetDefaultAccountId(string uuid)
     {

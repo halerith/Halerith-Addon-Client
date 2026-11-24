@@ -10,6 +10,9 @@ public static class ActiveBuildTracker
     private static readonly object _lock = new();
     private static readonly Dictionary<string, BuildState> _builds = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>Raised when a runtime build starts, including builds launched from other windows.</summary>
+    public static event Action<BuildState>? BuildRegistered;
+
     /// <summary>Snapshot of a running build's progress.</summary>
     public sealed class BuildState
     {
@@ -74,6 +77,7 @@ public static class ActiveBuildTracker
         {
             _builds[Key(mcVersion, loader, loaderVersion)] = state;
         }
+        BuildRegistered?.Invoke(state);
         return state;
     }
 

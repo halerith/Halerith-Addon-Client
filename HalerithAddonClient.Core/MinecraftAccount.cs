@@ -27,6 +27,9 @@ public sealed class MinecraftAccount
     /// <summary>UTC time when <see cref="McAccessToken"/> expires.</summary>
     public DateTime ExpiresAtUtc { get; set; }
 
+    /// <summary>Whether this account needs an interactive Minecraft sign-in.</summary>
+    public bool RequiresSignIn { get; set; }
+
     /// <summary>Whether the Minecraft access token has expired.</summary>
     public bool IsExpired => DateTime.UtcNow >= ExpiresAtUtc;
 

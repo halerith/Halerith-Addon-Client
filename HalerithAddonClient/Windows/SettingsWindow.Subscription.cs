@@ -86,6 +86,25 @@ public partial class SettingsWindow
         _ = RefreshSubscriptionStatusAsync();
     }
 
+    private async void SubscriptionAccountSignIn_Click(object? sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        _subscriptionAccountBox.IsDropDownOpen = false;
+        if (sender is not Button { Tag: AccountPickerItem { Account: { } target } }) return;
+        var signedIn = await new MicrosoftLoginWindow().ShowDialog<MinecraftAccount?>(this);
+        if (signedIn is null) return;
+        if (!string.Equals(MinecraftProfileClient.NormalizeUuid(signedIn.Uuid),
+                MinecraftProfileClient.NormalizeUuid(target.Uuid), StringComparison.OrdinalIgnoreCase))
+        {
+            PopulateSubscriptionAccounts(target.Uuid);
+            _subscriptionDetails.Text = $"Added {signedIn.Gamertag}. {target.Gamertag} still needs sign-in.";
+            return;
+        }
+        AccountStore.SetSignInRequired(target.Uuid, false);
+        PopulateSubscriptionAccounts(target.Uuid);
+        await RefreshSubscriptionStatusAsync();
+    }
+
     private void SubscriptionAccount_DropDownOpened(object? sender, EventArgs e)
     {
         if (AccountStore.LoadAll().Count > 0) return;
@@ -143,14 +162,21 @@ public partial class SettingsWindow
         }
         try
         {
-            if (account.IsExpired || string.IsNullOrWhiteSpace(account.McAccessToken))
+            var authentication = await MinecraftAccountAuthentication.EnsureReadyAsync(account.Uuid);
+            if (authentication != MinecraftAuthenticationResult.Ready)
             {
-                using var auth = new MicrosoftAuthService();
-                account = await auth.RefreshAsync(account);
-                AccountStore.Save(account);
                 if (refreshVersion != _subscriptionRefreshVersion) return;
                 PopulateSubscriptionAccounts(account.Uuid);
+                throw new InvalidOperationException(authentication == MinecraftAuthenticationResult.SignInRequired
+                    ? "Minecraft sign-in is required. Use the sign-in button beside this account."
+                    : "Could not renew Minecraft authentication. Try again later.");
             }
+
+            account = AccountStore.LoadAll().First(a =>
+                string.Equals(MinecraftProfileClient.NormalizeUuid(a.Uuid), expectedUuid,
+                    StringComparison.OrdinalIgnoreCase));
+            if (refreshVersion != _subscriptionRefreshVersion) return;
+            PopulateSubscriptionAccounts(account.Uuid);
 
             var config = new RuntimeConfig
             {

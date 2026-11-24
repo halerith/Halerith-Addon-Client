@@ -12,6 +12,21 @@ public static class SyncPlanner
         string? gameDataPath = null,
         string modpackFilePolicy = ModpackFilePolicies.Preserve)
     {
+        var duplicateTarget = manifest.Mods.GroupBy(m => m.DownloadFilename, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault(g => !string.IsNullOrWhiteSpace(g.Key) && g.Count() > 1);
+        if (duplicateTarget is not null)
+            throw new InvalidOperationException($"Multiple managed mods target '{duplicateTarget.Key}'. Resolve their filename aliases in the Manager before syncing.");
+        foreach (var mod in manifest.Mods.Where(m => !m.Unavailable))
+        {
+            if (!string.IsNullOrWhiteSpace(mod.Slug) && localPinnedItems.Any(pin =>
+                string.Equals(pin.ContentType, ContentTypes.Mod, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(pin.Slug, mod.Slug, StringComparison.OrdinalIgnoreCase)))
+                continue;
+            var occupied = localFiles.FirstOrDefault(f => string.Equals(f.FileName, mod.DownloadFilename, StringComparison.OrdinalIgnoreCase));
+            if (occupied is not null && !HashMatchesFile(occupied.FullPath, mod.DownloadHash, out _) &&
+                (!string.IsNullOrWhiteSpace(occupied.SourceId) && Matching.Score(mod, occupied) == 0))
+                throw new InvalidOperationException($"The local file '{occupied.FileName}' has different or unknown ownership. Resolve the local file conflict before syncing.");
+        }
         var plan = new SyncPlan();
         var matchedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -109,7 +124,7 @@ public static class SyncPlanner
             matchedPaths.Add(best.File.FullPath);
 
             var exactFile = string.Equals(best.File.FileName, mod.DownloadFilename, StringComparison.OrdinalIgnoreCase);
-            if (exactFile && mod.PackManaged)
+            if (exactFile && (mod.PackManaged || HasUsableHash(mod.DownloadHash)))
                 exactFile = HashMatchesFile(best.File.FullPath, mod.DownloadHash, out _);
 
             plan.Actions.Add(new SyncAction

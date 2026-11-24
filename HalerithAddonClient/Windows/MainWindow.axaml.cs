@@ -56,6 +56,8 @@ public partial class MainWindow : Window
         // When all remote servers disappear after an authentication reset, promote
         // the first local instance so the main view stays populated.
         _vm.RequestSelectFirstLocalInstance += OnRequestSelectFirstLocalInstance;
+        _vm.AccountAuthenticationChanged += (_, _) =>
+            Avalonia.Threading.Dispatcher.UIThread.Post(RefreshAccountSelectorForSettings);
 
         // Auto-scroll the console whenever a new line is added.
         _vm.ConsoleLines.CollectionChanged += OnConsoleLinesChanged;
@@ -104,6 +106,13 @@ public partial class MainWindow : Window
         };
 
         InitializeComponent();
+        ActiveBuildTracker.BuildRegistered += OnBuildRegistered;
+        Closed += (_, _) => ActiveBuildTracker.BuildRegistered -= OnBuildRegistered;
+        foreach (var build in ActiveBuildTracker.Snapshot().Where(build => !build.IsCompleted))
+        {
+            if (ActiveBuildTracker.Get(build.MinecraftVersion, build.Loader, build.LoaderVersion) is { } state)
+                ObserveBuildActivity(state);
+        }
         Title = "Halerith Addon Client";
         UpdateLaunchButtonState();
         RefreshAccountSelector();
@@ -489,6 +498,8 @@ public partial class MainWindow : Window
 
     private async Task InitialLoadAsync()
     {
+        using var activity = _vm.BeginClientActivity();
+
         // Populate local instances immediately so they're visible while
         // the remote servers are still loading their metadata.
         PopulateLocalInstances();

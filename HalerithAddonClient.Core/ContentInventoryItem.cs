@@ -61,13 +61,25 @@ public static class ContentInventoryBuilder
                 VersionName = action.InstalledVersion,
                 VersionNumber = action.ManifestMod?.VersionNumber ?? action.PackManifestItem?.VersionNumber ?? "",
                 DownloadFilename = localFile.FileName,
-                FileHash = action.ManifestMod?.DownloadHash?.Hash ?? action.PackManifestItem?.DownloadHash?.Hash ?? "",
+                FileHash = ObservedHash(localFile.FullPath, action.ManifestMod?.DownloadHash ?? action.PackManifestItem?.DownloadHash),
                 LocalPath = localFile.FullPath,
                 InstalledAtUtc = "",
             });
         }
 
         return items;
+    }
+
+    private static string ObservedHash(string path, ManifestHashInfo? expected)
+    {
+        using var stream = File.OpenRead(path);
+        using System.Security.Cryptography.HashAlgorithm algorithm = expected?.Normalized().Algorithm switch
+        {
+            "sha512" => System.Security.Cryptography.SHA512.Create(),
+            "sha256" => System.Security.Cryptography.SHA256.Create(),
+            _ => System.Security.Cryptography.SHA1.Create(),
+        };
+        return Convert.ToHexString(algorithm.ComputeHash(stream)).ToLowerInvariant();
     }
 
     public static List<ContentInventoryItem> FromLocalPlan(LocalContentPlan plan, string instanceDirectory)

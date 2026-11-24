@@ -54,6 +54,11 @@ public static class Matching
 
     public static int Score(ManifestMod mod, LocalModFile file)
     {
+        // A filename is not permission to take a different managed item's file.
+        if (!string.IsNullOrWhiteSpace(file.SourceId) && !string.IsNullOrWhiteSpace(mod.SourceId) &&
+            (!string.Equals(file.SourceId, mod.SourceId, StringComparison.OrdinalIgnoreCase) ||
+             (!string.IsNullOrWhiteSpace(file.Source) && !string.Equals(file.Source, mod.VersionSource, StringComparison.OrdinalIgnoreCase))))
+            return 0;
         if (string.Equals(mod.DownloadFilename, file.FileName, StringComparison.OrdinalIgnoreCase))
             return 1000;
 

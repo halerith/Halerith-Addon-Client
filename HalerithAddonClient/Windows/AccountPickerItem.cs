@@ -22,7 +22,10 @@ internal sealed class AccountPickerItem : INotifyPropertyChanged
 
     public bool IsAccount => Account is not null;
 
-    public string DisplayName => Account is null ? "" : DemoMode.PlayerName(Account.Gamertag);
+    public string DisplayName => Account is null ? "" : DemoMode.PlayerName(Account.Gamertag)
+        + (Account.RequiresSignIn ? " · Sign in required" : "");
+
+    public bool RequiresSignIn => Account?.RequiresSignIn == true;
 
     public string Uuid => Account?.Uuid ?? "";
 

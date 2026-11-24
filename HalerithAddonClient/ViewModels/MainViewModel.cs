@@ -38,8 +38,8 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
     private ServerItemViewModel? _selectedServer;
     private bool   _isSyncing;
     private double _syncProgress;
-    private bool   _isBuildActivity;
-    private double _buildActivityProgress;
+    private readonly Dictionary<int, double?> _clientActivities = new();
+    private int _nextClientActivityId;
     private bool   _isUpdating;
     private double _updateProgress;
     private string _statusText = "Starting up…";
@@ -347,32 +347,55 @@ public sealed partial class MainViewModel : INotifyPropertyChanged
     }
 
     /// <summary>
-    /// True while the selected server is doing refresh/update work.
-    /// Covers both full sync operations and selected-row refresh state restored from cache.
+    /// True while any server or local instance has work in progress.
     /// </summary>
     public bool IsActivityBarVisible =>
-        IsSyncing || _selectedServer?.IsRefreshing == true || _isBuildActivity;
+        IsSyncing || Servers.Any(server => server.IsRefreshing) || _clientActivities.Count > 0;
 
-    public bool IsIdleStatusSummaryVisible => !IsActivityBarVisible;
+    public bool IsIdleStatusSummaryVisible => !IsSyncing && _selectedServer?.IsRefreshing != true;
 
     /// <summary>True while the activity bar should animate instead of showing a determinate value.</summary>
     public bool IsActivityBarIndeterminate =>
-        !_isBuildActivity && (IsSyncing || _selectedServer?.IsRefreshing == true);
+        IsActivityBarVisible && (IsSyncing || Servers.Any(server => server.IsRefreshing) ||
+            _clientActivities.Count != 1 || !_clientActivities.Values.First().HasValue);
 
     /// <summary>Visible progress value for the activity divider. Idle is always empty.</summary>
     public double ActivityBarProgress =>
-        _isBuildActivity ? _buildActivityProgress : IsActivityBarVisible ? SyncProgress : 0;
+        !IsActivityBarIndeterminate && _clientActivities.Count == 1
+            ? _clientActivities.Values.First().GetValueOrDefault()
+            : 0;
 
-    public void SetBuildActivityProgress(double? progress)
+    /// <summary>Tracks a client-wide operation independently of the selected panel.</summary>
+    public ClientActivity BeginClientActivity(double? progress = null)
     {
-        var nextActive = progress.HasValue;
-        var nextProgress = progress.GetValueOrDefault();
-        if (_isBuildActivity == nextActive && Math.Abs(_buildActivityProgress - nextProgress) < 0.01)
-            return;
-
-        _isBuildActivity = nextActive;
-        _buildActivityProgress = nextProgress;
+        var id = ++_nextClientActivityId;
+        _clientActivities.Add(id, progress);
         OnPropertyChanged(nameof(IsActivityBarVisible));
+        return new ClientActivity(this, id);
+    }
+
+    public sealed class ClientActivity : IDisposable
+    {
+        private MainViewModel? _owner;
+        private readonly int _id;
+
+        internal ClientActivity(MainViewModel owner, int id) => (_owner, _id) = (owner, id);
+
+        public void SetProgress(double progress)
+        {
+            if (_owner is null) return;
+            _owner._clientActivities[_id] = Math.Clamp(progress, 0, 100);
+            _owner.OnPropertyChanged(nameof(IsActivityBarVisible));
+        }
+
+        public void Dispose()
+        {
+            var owner = _owner;
+            _owner = null;
+            if (owner is null) return;
+            owner._clientActivities.Remove(_id);
+            owner.OnPropertyChanged(nameof(IsActivityBarVisible));
+        }
     }
 
     /// <summary>Whether a self-update download is in progress.</summary>

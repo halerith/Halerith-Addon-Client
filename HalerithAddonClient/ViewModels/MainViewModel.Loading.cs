@@ -11,6 +11,33 @@ public sealed partial class MainViewModel
     private const string InconclusiveAuthenticationFailureMessage =
         "Authentication failed. Check your system time and try signing in again.";
     private string _lastRosterRefreshFailure = "";
+    public event EventHandler? AccountAuthenticationChanged;
+
+    private async Task<bool> EnsureSelectedMinecraftAccountReadyAsync()
+    {
+        var uuid = AccountStore.GetDefaultAccountId();
+        if (string.IsNullOrWhiteSpace(uuid))
+        {
+            StatusText = "Select a Minecraft account to refresh managed servers.";
+            return false;
+        }
+
+        var result = await MinecraftAccountAuthentication.EnsureReadyAsync(uuid);
+        if (result == MinecraftAuthenticationResult.Ready)
+            return true;
+
+        if (result == MinecraftAuthenticationResult.SignInRequired)
+        {
+            _lastRosterRefreshFailure = InvalidAuthenticationMessage;
+            AccountAuthenticationChanged?.Invoke(this, EventArgs.Empty);
+        }
+        else
+            _lastRosterRefreshFailure = "Could not renew Minecraft authentication. Try refreshing again.";
+
+        StatusText = _lastRosterRefreshFailure;
+        AppendConsole(_lastRosterRefreshFailure);
+        return false;
+    }
 
     /// <summary>
     /// Loads <see cref="AppConfig"/> from app storage, syncs the manager
@@ -65,6 +92,9 @@ public sealed partial class MainViewModel
 
     private async Task<bool> RefreshHostRostersBeforePopulateAsync(AppConfig config)
     {
+        if (config.Hosts.Any(h => h.IsEnrolled) && !await EnsureSelectedMinecraftAccountReadyAsync())
+            return false;
+
         var changed = false;
         var enrolledHosts = config.Hosts.Where(h => h.IsEnrolled).ToList();
 
@@ -155,6 +185,16 @@ public sealed partial class MainViewModel
 
         if (skewCheck.ProbeSucceeded)
         {
+            if (UsedHalerithToken(config))
+            {
+                host.HalerithAccessToken = "";
+                host.HalerithAccessTokenExpiresAtUtc = "";
+                StatusText = "Server session expired. Refresh again to verify your Minecraft account.";
+                return true;
+            }
+            AccountStore.SetSignInRequired(config.MinecraftUuid, true);
+            AccountAuthenticationChanged?.Invoke(this, EventArgs.Empty);
+            _lastRosterRefreshFailure = InvalidAuthenticationMessage;
             AppendConsole($"[{host.GetDisplayName()}] {InvalidAuthenticationMessage}");
             return true;
         }
@@ -166,6 +206,8 @@ public sealed partial class MainViewModel
     public async Task LoadAllServersAsync()
     {
         if (IsSyncing || _appConfig is null) return;
+
+        using var activity = BeginClientActivity();
 
         var selectedHostId = _selectedServer?.HostId;
         var selectedServerPublicId = _selectedServer?.ServerPublicId;
@@ -238,6 +280,10 @@ public sealed partial class MainViewModel
 
         try
         {
+            if (!await EnsureSelectedMinecraftAccountReadyAsync())
+                return;
+
+            config = _appConfig.ToRuntimeConfig(host, server.ServerPublicId);
             AppConfigStore.ValidateForRuntime(config);
 
             if (!config.IsEnrolled)
@@ -480,6 +526,13 @@ public sealed partial class MainViewModel
         try
         {
             await Task.Run(() => _appConfig = AppConfigStore.LoadAppConfig());
+
+            if (_appConfig is not null && !await EnsureSelectedMinecraftAccountReadyAsync())
+            {
+                if (loadingServer is not null && _lastRosterRefreshFailure == InvalidAuthenticationMessage)
+                    MarkServerAuthenticationProblem(loadingServer, StatusText, appendConsole: false);
+                return;
+            }
 
             if (_appConfig is not null)
             {
@@ -776,10 +829,15 @@ public sealed partial class MainViewModel
 
     private static bool IsAuthenticationInvalidResponse(ApiResponseBase response, ApiClient apiClient)
     {
-        return response.Code == 1010
+        return response.Code is 1007 or 1010
             || apiClient.LastStatusCode == HttpStatusCode.Unauthorized
             || string.Equals(response.Error, "http_401", StringComparison.OrdinalIgnoreCase);
     }
+
+    private static bool UsedHalerithToken(RuntimeConfig config) =>
+        !string.IsNullOrWhiteSpace(config.HalerithAccessToken)
+        && DateTimeOffset.TryParse(config.HalerithAccessTokenExpiresAtUtc, out var expiry)
+        && expiry.UtcDateTime > DateTime.UtcNow.AddSeconds(60);
 
     private async Task<ClockSkewCheckResult> CheckClockSkewAsync(RuntimeConfig config)
     {
@@ -812,6 +870,25 @@ public sealed partial class MainViewModel
 
         if (skewCheck.ProbeSucceeded)
         {
+            if (UsedHalerithToken(config))
+            {
+                config.HalerithAccessToken = "";
+                config.HalerithAccessTokenExpiresAtUtc = "";
+                var host = _appConfig?.Hosts.FirstOrDefault(h =>
+                    string.Equals(h.Id, config.HostId, StringComparison.OrdinalIgnoreCase));
+                if (host is not null)
+                {
+                    host.HalerithAccessToken = "";
+                    host.HalerithAccessTokenExpiresAtUtc = "";
+                    AppConfigStore.SaveAppConfig(_appConfig!);
+                }
+                var retryMessage = "Server session expired. Refresh again to verify your Minecraft account.";
+                MarkServerAuthenticationProblem(server, retryMessage, appendConsole: true);
+                if (showStatusNote) StatusText = retryMessage;
+                return;
+            }
+            AccountStore.SetSignInRequired(config.MinecraftUuid, true);
+            AccountAuthenticationChanged?.Invoke(this, EventArgs.Empty);
             await InvalidateAuthenticationAsync(server, showStatusNote);
             return;
         }

@@ -208,7 +208,7 @@
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <Grid MinWidth="180">
-                                                <Grid ColumnDefinitions="Auto,*,Auto"
+                                                <Grid ColumnDefinitions="Auto,*,Auto,Auto"
                                                       HorizontalAlignment="Stretch"
                                                       IsVisible="{Binding IsAccount}">
                                                     <Image Grid.Column="0"
@@ -222,7 +222,12 @@
                                                                Text="{Binding DisplayName}"
                                                                TextTrimming="CharacterEllipsis"
                                                                VerticalAlignment="Center"/>
-                                                    <Button Grid.Column="2"
+                                                    <Button Grid.Column="2" Content="↻" Width="25" Height="25"
+                                                            Padding="0" Margin="8,0,0,0" Tag="{Binding}"
+                                                            IsVisible="{Binding RequiresSignIn}"
+                                                            ToolTip.Tip="Sign in again for this Minecraft account"
+                                                            Click="DefaultAccountSignInMenuButton_Click"/>
+                                                    <Button Grid.Column="3"
                                                             Classes="account-delete"
                                                             Content="✕"
                                                             Width="25" Height="25"
@@ -389,12 +394,17 @@
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <Grid MinWidth="180">
-                                            <Grid ColumnDefinitions="Auto,*,Auto" IsVisible="{Binding IsAccount}">
+                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" IsVisible="{Binding IsAccount}">
                                                 <Image Grid.Column="0" Source="{Binding HeadImage}" Width="25" Height="25"
                                                        Stretch="UniformToFill" Margin="0,0,8,0" IsVisible="{Binding HasHeadImage}"/>
                                                 <TextBlock Grid.Column="1" Text="{Binding DisplayName}"
                                                            TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
-                                                <Button Grid.Column="2" Classes="account-delete" Content="✕"
+                                                <Button Grid.Column="2" Content="↻" Width="25" Height="25"
+                                                        Padding="0" Margin="8,0,0,0" Tag="{Binding}"
+                                                        IsVisible="{Binding RequiresSignIn}"
+                                                        ToolTip.Tip="Sign in again for this Minecraft account"
+                                                        Click="SubscriptionAccountSignIn_Click"/>
+                                                <Button Grid.Column="3" Classes="account-delete" Content="✕"
                                                         Width="25" Height="25" Padding="0" Margin="8,0,0,0"
                                                         FontSize="11" Tag="{Binding}" ToolTip.Tip="Remove account"
                                                         Click="SubscriptionAccountDelete_Click"/>
